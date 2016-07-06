@@ -1,0 +1,23 @@
+{
+    "name": "kadet/u-xmpp",
+    "type": "library",
+    "description": "",
+    "require": {
+        "react/react": "^0.5.0@dev",
+        "evenement/evenement": "2.0.*",
+        "kadet/keylighter": "dev-master"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kacper Donat",
+            "email": "kadet1090@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Kadet\\Xmpp\\": "."
+        }
+    },
+    "minimum-stability": "dev"
+}
