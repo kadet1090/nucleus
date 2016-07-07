@@ -185,4 +185,19 @@ class XmlStream extends CompositeStream
             $this->emit('stream-error', [ $element ]);
         }
     }
+
+    public function __get($name)
+    {
+        return $this->stream->documentElement->getAttribute($name);
+    }
+
+    public function __set($name, $value)
+    {
+        throw new \LogicException('Stream data is read-only.'); // todo: proper exception
+    }
+
+    public function __isset($name)
+    {
+        return $this->stream->documentElement->hasAttribute($name);
+    }
 }
