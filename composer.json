@@ -1,23 +1,24 @@
 {
-    "name": "kadet/u-xmpp",
-    "type": "library",
-    "description": "",
-    "require": {
-        "react/react": "^0.5.0@dev",
-        "evenement/evenement": "2.0.*",
-        "kadet/keylighter": "dev-master"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Kacper Donat",
-            "email": "kadet1090@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Kadet\\Xmpp\\": "."
-        }
-    },
-    "minimum-stability": "dev"
+  "name": "kadet/u-xmpp",
+  "type": "library",
+  "description": "",
+  "require": {
+    "react/socket-client": "^0.5",
+    "evenement/evenement": "2.0.*",
+    "kadet/keylighter": "dev-master",
+    "monolog/monolog": "^1.20"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Kacper Donat",
+      "email": "kadet1090@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Kadet\\Xmpp\\": "."
+    }
+  },
+  "minimum-stability": "dev"
 }

@@ -30,9 +30,10 @@ class XmlElement extends \DOMElement
         }
     }
 
-    public static function create($name = 'element')
+    /** @return static */
+    public static function create($name = 'element', $content = null, $uri = null)
     {
-        return self::_document()->importNode(new static($name));
+        return self::_document()->importNode(new static($name, $content, $uri));
     }
 
     private static function _document()

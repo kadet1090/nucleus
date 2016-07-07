@@ -8,8 +8,18 @@
 namespace Kadet\Xmpp\Xml;
 
 use Evenement\EventEmitterTrait;
+use React\Stream\CompositeStream;
+use React\Stream\DuplexStreamInterface;
 
-class XmlStream
+
+/**
+ * Class XmlStream
+ *
+ * @package Kadet\Xmpp\Xml
+ *
+ * @event element
+ */
+class XmlStream extends CompositeStream
 {
     use EventEmitterTrait;
 
@@ -22,27 +32,20 @@ class XmlStream
     private $stack = [];
 
     private $factory;
+    private $isOpened = false;
 
-    public function __construct(XmlElementFactory $factory) {
-        $this->parser = xml_parser_create();
-
-        xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE,   1);
-        xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, 0);
-
-        xml_set_element_handler($this->parser, function($parser, $name, $attrs) {
-            $this->handleElementStart($name, $attrs);
-        }, function($parser, $name) {
-            $this->handleElementEnd($name);
-        });
-
-        xml_set_character_data_handler($this->parser, function($parser, $data) {
-            $this->handleTextData($data);
-        });
+    public function __construct(XmlElementFactory $factory, DuplexStreamInterface $stream) {
+        $this->setupParser();
 
         $this->stream = new XmlDocument();
         $this->stream->formatOutput = true;
 
         $this->factory = $factory;
+
+        parent::__construct($stream, $stream);
+
+        $this->on('data', [$this, 'parse']);
+        $this->write('<?xml version="1.0" encoding="utf-8"?>');
     }
 
     public function parse($data) {
@@ -129,5 +132,46 @@ class XmlStream
         if(trim($data)) {
             end($this->stack)->appendChild(new \DOMText($data));
         }
+    }
+
+    public function start(array $attributes = [])
+    {
+        $stream = XmlElement::create('stream:stream', null, 'http://etherx.jabber.org/streams');
+        foreach ($attributes as $key => $value) {
+            $stream->setAttribute($key, $value);
+        }
+
+        $this->write(preg_replace('~/>$~', '>', $stream));
+        $this->isOpened = true;
+    }
+
+    public function close()
+    {
+        $this->write('</stream:stream>');
+        $this->isOpened = false;
+
+        parent::close();
+    }
+
+    public function isOpened() {
+        return $this->isOpened;
+    }
+
+    protected function setupParser()
+    {
+        $this->parser = xml_parser_create();
+
+        xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, 1);
+        xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, 0);
+
+        xml_set_element_handler($this->parser, function ($parser, $name, $attrs) {
+            $this->handleElementStart($name, $attrs);
+        }, function ($parser, $name) {
+            $this->handleElementEnd($name);
+        });
+
+        xml_set_character_data_handler($this->parser, function ($parser, $data) {
+            $this->handleTextData($data);
+        });
     }
 }
