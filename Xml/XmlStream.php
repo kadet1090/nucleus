@@ -18,10 +18,13 @@ use React\Stream\DuplexStreamInterface;
  * @package Kadet\Xmpp\Xml
  *
  * @event element
+ * @event stream-error
  */
 class XmlStream extends CompositeStream
 {
     use EventEmitterTrait;
+
+    const NAMESPACE_URI = 'http://etherx.jabber.org/streams';
 
     private $parser;
 
@@ -45,6 +48,7 @@ class XmlStream extends CompositeStream
         parent::__construct($stream, $stream);
 
         $this->on('data', [$this, 'parse']);
+        $this->on('element', function(XmlElement $element) { $this->handleError($element); });
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
     }
 
@@ -108,7 +112,7 @@ class XmlStream extends CompositeStream
     private function handleElementStart($name, $attrs) {
         $element = $this->_element($name, $attrs);
 
-        if($element->localName === 'stream' && $element->namespaceURI === 'http://etherx.jabber.org/streams') {
+        if($element->localName === 'stream' && $element->namespaceURI === static::NAMESPACE_URI) {
             $this->stream->appendChild($element);
         } elseif(count($this->stack) > 1) {
             end($this->stack)->appendChild($element);
@@ -173,5 +177,12 @@ class XmlStream extends CompositeStream
         xml_set_character_data_handler($this->parser, function ($parser, $data) {
             $this->handleTextData($data);
         });
+    }
+
+    private function handleError(XmlElement $element)
+    {
+        if($element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI) {
+            $this->emit('stream-error', [ $element ]);
+        }
     }
 }
