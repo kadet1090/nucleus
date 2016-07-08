@@ -18,7 +18,14 @@ use React\Stream\DuplexStreamInterface;
  * @package Kadet\Xmpp\Xml
  *
  * @event element
- * @event stream-error
+ * @event stream:error
+ * @event stream:open
+ *
+ * @property-read $id
+ * @property-read $from
+ * @property-read $to
+ * @property-read $version
+ * @property-read $lang
  */
 class XmlStream extends CompositeStream
 {
@@ -49,6 +56,8 @@ class XmlStream extends CompositeStream
 
         $this->on('data', [$this, 'parse']);
         $this->on('element', function(XmlElement $element) { $this->handleError($element); });
+        $this->on('close', function () { $this->isOpened = false; });
+
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
     }
 
@@ -114,6 +123,7 @@ class XmlStream extends CompositeStream
 
         if($element->localName === 'stream' && $element->namespaceURI === static::NAMESPACE_URI) {
             $this->stream->appendChild($element);
+            $this->emit('stream:open', [ $this ]);
         } elseif(count($this->stack) > 1) {
             end($this->stack)->appendChild($element);
         }
@@ -128,7 +138,7 @@ class XmlStream extends CompositeStream
 
         $element = array_pop($this->stack);
         if(count($this->stack) == 1) {
-            $this->emit('element', [$element]);
+            $this->emit('element', [ $element ]);
         }
     }
 
@@ -136,6 +146,13 @@ class XmlStream extends CompositeStream
         if(trim($data)) {
             end($this->stack)->appendChild(new \DOMText($data));
         }
+    }
+
+    public function write($data)
+    {
+        $this->emit('send:'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
+        
+        return parent::write($data);
     }
 
     public function start(array $attributes = [])
@@ -182,18 +199,18 @@ class XmlStream extends CompositeStream
     private function handleError(XmlElement $element)
     {
         if($element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI) {
-            $this->emit('stream-error', [ $element ]);
+            $this->emit('stream:error', [ $element ]);
         }
     }
 
     public function __get($name)
     {
-        return $this->stream->documentElement->getAttribute($name);
+        return $this->stream->documentElement->getAttribute($name === 'lang' ? 'xml:lang' : $name);
     }
 
     public function __set($name, $value)
     {
-        throw new \LogicException('Stream data is read-only.'); // todo: proper exception
+        throw new \LogicException('Stream attributes are read-only.'); // todo: proper exception
     }
 
     public function __isset($name)
