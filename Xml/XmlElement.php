@@ -45,4 +45,12 @@ class XmlElement extends \DOMElement
 
         return $document;
     }
+
+    /** @return XmlElement[] */
+    public function elements($name, $uri = null) : array
+    {
+        $nodes = $uri === null ? $this->getElementsByTagName($name) : $this->getElementsByTagNameNS($uri, $name);
+
+        return iterator_to_array($nodes);
+    }
 }

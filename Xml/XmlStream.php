@@ -8,8 +8,10 @@
 namespace Kadet\Xmpp\Xml;
 
 use Evenement\EventEmitterTrait;
+use React\SocketClient\StreamEncryption;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
+use React\Stream\Stream;
 
 
 /**
@@ -41,15 +43,20 @@ class XmlStream extends CompositeStream
     /** @var \DOMElement[] */
     private $stack = [];
 
-    private $factory;
+    public $factory;
     private $isOpened = false;
 
-    public function __construct(XmlElementFactory $factory, DuplexStreamInterface $stream) {
-        $this->setupParser();
+    public function init()
+    {
+        $this->stack = [];
 
         $this->stream = new XmlDocument();
         $this->stream->formatOutput = true;
 
+        $this->setupParser();
+    }
+
+    public function __construct(XmlElementFactory $factory, DuplexStreamInterface $stream) {
         $this->factory = $factory;
 
         parent::__construct($stream, $stream);
@@ -57,8 +64,6 @@ class XmlStream extends CompositeStream
         $this->on('data', [$this, 'parse']);
         $this->on('element', function(XmlElement $element) { $this->handleError($element); });
         $this->on('close', function () { $this->isOpened = false; });
-
-        $this->write('<?xml version="1.0" encoding="utf-8"?>');
     }
 
     public function parse($data) {
@@ -71,7 +76,7 @@ class XmlStream extends CompositeStream
 
         foreach($attrs as $attr => $value) {
             if(strpos($attr, 'xmlns') === 0) {
-                $namespaces[substr($attr, 6)] = $value;
+                $namespaces[substr($attr, 6) ?: null] = $value;
             }
 
             $attributes[$attr] = $value;
@@ -151,12 +156,16 @@ class XmlStream extends CompositeStream
     public function write($data)
     {
         $this->emit('send:'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
-        
+
         return parent::write($data);
     }
 
     public function start(array $attributes = [])
     {
+        $this->init();
+
+        $this->write('<?xml version="1.0" encoding="utf-8"?>');
+
         $stream = XmlElement::create('stream:stream', null, 'http://etherx.jabber.org/streams');
         foreach ($attributes as $key => $value) {
             $stream->setAttribute($key, $value);
