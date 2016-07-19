@@ -8,6 +8,7 @@
 namespace Kadet\Xmpp\Xml;
 
 use Evenement\EventEmitterInterface;
+use Kadet\Xmpp\Exception\ReadOnlyException;
 use Kadet\Xmpp\Utils\BetterEmitter;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
@@ -116,7 +117,7 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 
     public function __set($name, $value)
     {
-        throw new \LogicException('Stream attributes are read-only.'); // todo: proper exception
+        throw new ReadOnlyException('Stream attributes are read-only.');
     }
 
     public function __isset($name)

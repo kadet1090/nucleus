@@ -31,7 +31,7 @@ function tag($name)
     };
 }
 
-function typeof($class)
+function ofType($class)
 {
     return function ($element) use ($class) {
         return $element instanceof $class;

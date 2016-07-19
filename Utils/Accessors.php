@@ -2,6 +2,9 @@
 
 namespace Kadet\Xmpp\Utils;
 
+use Kadet\Xmpp\Exception\ReadOnlyException;
+use Kadet\Xmpp\Exception\WriteOnlyException;
+
 trait Accessors
 {
     private $_magic = [];
@@ -13,7 +16,7 @@ trait Accessors
         if (method_exists($this, $getter)) {
             return $this->$getter();
         } elseif (method_exists($this, 'set' . ucfirst($property))) {
-            // todo: Exception, write-only
+            throw new WriteOnlyException("Property \$$property is write-only, which is rather strange.");
         } else {
             return $this->_get($property);
         }
@@ -26,7 +29,7 @@ trait Accessors
         if (method_exists($this, $setter)) {
             $this->$setter($value);
         } elseif (method_exists($this, 'get' . ucfirst($property))) {
-            // todo: Exception, read-only
+            throw new ReadOnlyException("Property \$$property is read-only.");
         } else {
             $this->_magic[$property] = $value;
         }

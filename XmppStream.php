@@ -15,6 +15,7 @@
 
 namespace Kadet\Xmpp;
 
+use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Logging;
@@ -65,7 +66,7 @@ class XmppStream extends XmlStream
 
                 return; // Stop processing
             } elseif ($element->startTls === Features::TLS_REQUIRED) {
-                throw new \LogicException('Encryption is not available, but server requires it.');
+                throw new TlsException('Encryption is not available, but server requires it.');
             } else {
                 $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
@@ -82,7 +83,7 @@ class XmppStream extends XmlStream
             $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
             $this->restart();
         } else {
-            // todo: exception
+            throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened
         }
     }
 }
