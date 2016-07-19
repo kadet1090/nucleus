@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -26,12 +25,17 @@ trait Logging
     /** @var LoggerInterface */
     private $logger = null;
 
+    public static function set(LoggerInterface $logger)
+    {
+        self::$global = $logger;
+    }
+
     /**
      * @return LoggerInterface
      */
     public function getLogger()
     {
-        if($this->logger === null) {
+        if ($this->logger === null) {
             $this->logger = self::get();
         }
 
@@ -43,17 +47,12 @@ trait Logging
         $this->logger = $logger;
     }
 
-    public static function set(LoggerInterface $logger)
-    {
-        self::$global = $logger;
-    }
-
     /**
      * @return LoggerInterface
      */
     public static function get()
     {
-        if(self::$global === null) {
+        if (self::$global === null) {
             self::$global = new NullLogger();
         }
 

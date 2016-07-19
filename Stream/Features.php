@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Stream;
 
-
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 
@@ -33,14 +32,15 @@ class Features extends XmlElement
 
     use Accessors;
 
-    public function getStartTls() {
+    public function getStartTls()
+    {
         $startTls = $this->elements('starttls');
-        if(!count($startTls)) {
+        if (!count($startTls)) {
             return self::TLS_UNAVAILABLE;
         }
 
         $element = $startTls[0];
-        if(count($element->elements('required'))) {
+        if (count($element->elements('required'))) {
             return self::TLS_REQUIRED;
         }
 

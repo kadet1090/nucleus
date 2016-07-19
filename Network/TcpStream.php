@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Network;
 
-
 use React\Stream\Stream;
 
 class TcpStream extends Stream implements SecureStream
@@ -24,7 +23,7 @@ class TcpStream extends Stream implements SecureStream
 
     public function encrypt(int $type = STREAM_CRYPTO_METHOD_ANY_CLIENT) : bool
     {
-        if($this->secured) {
+        if ($this->secured) {
             return true;
         }
 
@@ -38,7 +37,7 @@ class TcpStream extends Stream implements SecureStream
 
     public function decrypt() : bool
     {
-        if(!$this->secured) {
+        if (!$this->secured) {
             return true;
         }
 

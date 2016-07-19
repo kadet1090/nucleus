@@ -15,12 +15,11 @@
 
 namespace Kadet\Xmpp\Xml;
 
-
 class XmlElement extends \DOMElement
 {
     public function __toString()
     {
-        if($this->ownerDocument) {
+        if ($this->ownerDocument) {
             return $this->ownerDocument->saveXML($this);
         } else {
             $clone = $this->cloneNode(true);
@@ -39,7 +38,7 @@ class XmlElement extends \DOMElement
     private static function _document()
     {
         static $document;
-        if(!isset($document)) {
+        if (!isset($document)) {
             $document = new XmlDocument();
         }
 

@@ -15,31 +15,34 @@
 
 namespace Kadet\Xmpp\Utils\filter;
 
-
 use Kadet\Xmpp\Xml\XmlElement;
 
-function xmlns($uri) {
-    return function (XmlElement $element) use($uri) {
+function xmlns($uri)
+{
+    return function (XmlElement $element) use ($uri) {
         return $element->namespaceURI === $uri;
     };
 }
 
-function tag($name) {
-    return function (XmlElement $element) use($name) {
+function tag($name)
+{
+    return function (XmlElement $element) use ($name) {
         return $element->localName === $name;
     };
 }
 
-function typeof($class) {
-    return function ($element) use($class) {
+function typeof($class)
+{
+    return function ($element) use ($class) {
         return $element instanceof $class;
     };
 }
 
-function all(callable ...$functions) {
-    return function (...$args) use($functions) {
+function all(callable ...$functions)
+{
+    return function (...$args) use ($functions) {
         foreach ($functions as $function) {
-            if(!$function(...$args)) {
+            if (!$function(...$args)) {
                 return false;
             }
         }
@@ -48,10 +51,11 @@ function all(callable ...$functions) {
     };
 }
 
-function oneOf(callable ...$functions) {
-    return function (...$args) use($functions) {
+function oneOf(callable ...$functions)
+{
+    return function (...$args) use ($functions) {
         foreach ($functions as $function) {
-            if($function(...$args)) {
+            if ($function(...$args)) {
                 return true;
             }
         }

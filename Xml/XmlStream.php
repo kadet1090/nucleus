@@ -12,7 +12,6 @@ use Kadet\Xmpp\Utils\BetterEmitter;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\Util;
-
 use Kadet\Xmpp\Utils\filter as with;
 
 /**
@@ -49,16 +48,17 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
     /** @var XmlElement  */
     private $stream;
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $stream) {
+    public function __construct(XmlParser $parser, DuplexStreamInterface $stream)
+    {
         parent::__construct($stream, $stream);
 
         $this->parser = $parser;
 
-        $this->on('element', function(XmlElement $element) {
+        $this->on('element', function (XmlElement $element) {
             $this->handleError($element);
         }, with\all(with\tag('error'), with\xmlns(self::NAMESPACE_URI)));
 
-        $this->parser->on('parse.begin', function(XmlElement $stream) {
+        $this->parser->on('parse.begin', function (XmlElement $stream) {
             $this->stream = $stream;
             $this->emit('stream.open', [ $stream ]);
         }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
@@ -104,7 +104,8 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
         parent::close();
     }
 
-    public function isOpened() {
+    public function isOpened()
+    {
         return $this->isOpened;
     }
 

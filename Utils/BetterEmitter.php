@@ -26,12 +26,12 @@ trait BetterEmitter
 
     public function on($event, callable $listener, $condition = null)
     {
-        if($condition !== null) {
-            $callable = $listener;
+        if ($condition !== null) {
+            $callable  = $listener;
             $condition = $this->emitterResolveCondition($condition);
 
-            $listener = function(...$arguments) use ($callable, $condition) {
-                if($condition(...$arguments)) {
+            $listener = function (...$arguments) use ($callable, $condition) {
+                if ($condition(...$arguments)) {
                     $callable(...$arguments);
                 }
             };
@@ -43,7 +43,7 @@ trait BetterEmitter
     public function emit($event, array $arguments = [])
     {
         foreach ($this->listeners($event) as $listener) {
-            if($listener(...$arguments) === false) {
+            if ($listener(...$arguments) === false) {
                 break;
             }
         }
@@ -51,9 +51,9 @@ trait BetterEmitter
 
     protected function emitterResolveCondition($condition) : callable
     {
-        if(is_callable($condition)) {
+        if (is_callable($condition)) {
             return $condition;
-        } elseif(class_exists($condition)) {
+        } elseif (class_exists($condition)) {
             return with\typeof($condition);
         } else {
             throw new \Exception(); // todo: exception

@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Xml;
 
-
 class XmlElementFactory
 {
     /**
@@ -25,9 +24,9 @@ class XmlElementFactory
     
     public function lookup($namespace, $tag)
     {
-        if(isset($this->lookup["$tag@$namespace"])) {
+        if (isset($this->lookup["$tag@$namespace"])) {
             return $this->lookup["$tag@$namespace"];
-        } elseif(isset($this->lookup[$namespace])) {
+        } elseif (isset($this->lookup[$namespace])) {
             return $this->lookup[$namespace];
         } else {
             return XmlElement::class;
@@ -36,12 +35,13 @@ class XmlElementFactory
 
     public function register($class, $namespace, $tag = null)
     {
-        if(is_array($namespace)) {
+        if (is_array($namespace)) {
             $this->lookup = array_merge($this->lookup, $namespace);
+
             return;
         }
 
-        if($tag !== null) {
+        if ($tag !== null) {
             $namespace = "$tag@$namespace";
         }
 

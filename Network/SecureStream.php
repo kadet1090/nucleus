@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Network;
 
-
 interface SecureStream
 {
     public function encrypt(int $type = STREAM_CRYPTO_METHOD_ANY_CLIENT) : bool;

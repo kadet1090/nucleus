@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Xml;
 
-
 use DOMNode;
 
 class XmlDocument extends \DOMDocument
@@ -29,6 +28,7 @@ class XmlDocument extends \DOMDocument
     public function importNode(DOMNode $importedNode, $deep = null)
     {
         $this->registerNodeClass('DOMElement', get_class($importedNode));
+
         return parent::importNode($importedNode, $deep);
     }
 }

@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Xml;
 
-
 use Evenement\EventEmitterInterface;
 use Kadet\Xmpp\Utils\BetterEmitter;
 
@@ -89,22 +88,24 @@ class XmlParser implements EventEmitterInterface
             $this->handleTextData($data);
         });
 
-        $this->document = new XmlDocument();
+        $this->document               = new XmlDocument();
         $this->document->formatOutput = true;
 
         $this->stack = [];
     }
 
-    public function parse($data) {
+    public function parse($data)
+    {
         xml_parse($this->parser, $data);
     }
 
-    private function _attributes($attrs) {
+    private function _attributes($attrs)
+    {
         $attributes = [];
         $namespaces = [];
 
-        foreach($attrs as $attr => $value) {
-            if(strpos($attr, 'xmlns') === 0) {
+        foreach ($attrs as $attr => $value) {
+            if (strpos($attr, 'xmlns') === 0) {
                 $namespaces[substr($attr, 6) ?: null] = $value;
             }
 
@@ -117,9 +118,9 @@ class XmlParser implements EventEmitterInterface
     private function _name($name)
     {
         $namespace = null;
-        if(($pos = strpos($name, ':')) !== false) {
+        if (($pos = strpos($name, ':')) !== false) {
             $namespace = substr($name, 0, $pos);
-            $name = substr($name, $pos + 1);
+            $name      = substr($name, $pos + 1);
         }
 
         return [$name, $namespace];
@@ -127,7 +128,7 @@ class XmlParser implements EventEmitterInterface
 
     private function _lookup($prefix, $namespaces)
     {
-        if($prefix === 'xmlns') {
+        if ($prefix === 'xmlns') {
             return 'http://www.w3.org/2000/xmlns/';
         }
 
@@ -137,9 +138,9 @@ class XmlParser implements EventEmitterInterface
     private function _element($name, $attrs)
     {
         list($attributes, $namespaces) = $this->_attributes($attrs);
-        list($tag, $prefix) = $this->_name($name);
+        list($tag, $prefix)            = $this->_name($name);
 
-        $uri = $this->_lookup($prefix, $namespaces);
+        $uri   = $this->_lookup($prefix, $namespaces);
         $class = $this->factory->lookup($uri, $tag);
 
         /** @var XmlElement $element */
@@ -151,10 +152,11 @@ class XmlParser implements EventEmitterInterface
         return $element;
     }
 
-    private function handleElementStart($name, $attrs) {
+    private function handleElementStart($name, $attrs)
+    {
         $element = $this->_element($name, $attrs);
 
-        if(count($this->stack) > 1) {
+        if (count($this->stack) > 1) {
             end($this->stack)->appendChild($element);
         }
         $this->emit('parse.begin', [ $element ]);
@@ -162,19 +164,21 @@ class XmlParser implements EventEmitterInterface
         $this->stack[] = $element;
     }
 
-    private function handleElementEnd($name) {
-        if(empty($this->stack) === null) {
+    private function handleElementEnd($name)
+    {
+        if (empty($this->stack) === null) {
             return;
         }
 
         $element = array_pop($this->stack);
-        if(count($this->stack) == 1) {
+        if (count($this->stack) == 1) {
             $this->emit('element', [ $element ]);
         }
     }
 
-    private function handleTextData($data) {
-        if(trim($data)) {
+    private function handleTextData($data)
+    {
+        if (trim($data)) {
             end($this->stack)->appendChild(new \DOMText($data));
         }
     }
