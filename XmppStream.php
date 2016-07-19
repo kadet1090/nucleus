@@ -18,6 +18,7 @@ namespace Kadet\Xmpp;
 
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Features;
+use Kadet\Xmpp\Utils\Filter;
 use Kadet\Xmpp\Utils\Logging;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XmlParser;
@@ -36,18 +37,10 @@ class XmppStream extends XmlStream
 
         $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
 
+        $this->on('element', function (Features $element) { $this->handleFeatures($element); }, Features::class);
         $this->on('element', function (XmlElement $element) {
-            if($element instanceof Features) {
-                $this->handleFeatures($element);
-            } elseif(
-                $element->namespaceURI === 'urn:ietf:params:xml:ns:xmpp-tls' &&
-                $element->localName === 'proceed'
-            ) {
-                $this->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
-                $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
-                $this->restart();
-            }
-        });
+            $this->handleTls($element);
+        }, Filter::xmlns('urn:ietf:params:xml:ns:xmpp-tls'));
     }
 
     public function start(array $attributes = [])
@@ -76,6 +69,16 @@ class XmppStream extends XmlStream
             } else {
                 $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
+        }
+
+        $this->write('</>');
+    }
+
+    private function handleTls(XmlElement $response) {
+        if($response->localName === 'proceed') {
+            $this->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $this->restart();
         }
     }
 }

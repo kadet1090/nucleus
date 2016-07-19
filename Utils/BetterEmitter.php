@@ -28,7 +28,7 @@ trait BetterEmitter
     {
         if($condition !== null) {
             $callable = $listener;
-            $condition = $this->resolveCondition($condition);
+            $condition = $this->emitterResolveCondition($condition);
 
             $listener = function(...$arguments) use ($callable, $condition) {
                 if($condition(...$arguments)) {
@@ -49,10 +49,12 @@ trait BetterEmitter
         }
     }
 
-    private function resolveCondition($condition) : callable
+    protected function emitterResolveCondition($condition) : callable
     {
         if(is_callable($condition)) {
             return $condition;
+        } elseif(class_exists($condition)) {
+            return Filter::typeof($condition);
         } else {
             throw new \Exception(); // todo: exception
         }
