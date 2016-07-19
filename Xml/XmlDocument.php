@@ -20,6 +20,12 @@ use DOMNode;
 
 class XmlDocument extends \DOMDocument
 {
+    /**
+     * @param DOMNode $importedNode
+     * @param null $deep
+     *
+     * @return XmlElement
+     */
     public function importNode(DOMNode $importedNode, $deep = null)
     {
         $this->registerNodeClass('DOMElement', get_class($importedNode));

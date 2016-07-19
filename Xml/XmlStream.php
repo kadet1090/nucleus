@@ -7,11 +7,11 @@
 
 namespace Kadet\Xmpp\Xml;
 
+use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
-use React\SocketClient\StreamEncryption;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
-use React\Stream\Stream;
+use React\Stream\Util;
 
 
 /**
@@ -29,127 +29,40 @@ use React\Stream\Stream;
  * @property-read $version
  * @property-read $lang
  */
-class XmlStream extends CompositeStream
+class XmlStream extends CompositeStream implements EventEmitterInterface
 {
     use EventEmitterTrait;
 
     const NAMESPACE_URI = 'http://etherx.jabber.org/streams';
 
-    private $parser;
+    /**
+     * XmlParser reference
+     *
+     * @var XmlParser
+     */
+    protected $parser;
 
     /** @var \DOMDocument */
     private $stream;
 
-    /** @var \DOMElement[] */
-    private $stack = [];
-
-    public $factory;
     private $isOpened = false;
 
-    public function init()
-    {
-        $this->stack = [];
-
-        $this->stream = new XmlDocument();
-        $this->stream->formatOutput = true;
-
-        $this->setupParser();
-    }
-
-    public function __construct(XmlElementFactory $factory, DuplexStreamInterface $stream) {
-        $this->factory = $factory;
+    public function __construct(XmlParser $parser, DuplexStreamInterface $stream) {
+        $this->parser = $parser;
 
         parent::__construct($stream, $stream);
 
-        $this->on('data', [$this, 'parse']);
+        $this->on('data', [$this->parser, 'parse']);
         $this->on('element', function(XmlElement $element) { $this->handleError($element); });
         $this->on('close', function () { $this->isOpened = false; });
+
+        Util::forwardEvents($this->parser, $this, ['element']);
     }
 
-    public function parse($data) {
-        xml_parse($this->parser, $data);
-    }
-
-    private function _attributes($attrs) {
-        $attributes = [];
-        $namespaces = [];
-
-        foreach($attrs as $attr => $value) {
-            if(strpos($attr, 'xmlns') === 0) {
-                $namespaces[substr($attr, 6) ?: null] = $value;
-            }
-
-            $attributes[$attr] = $value;
-        }
-
-        return [$attributes, $namespaces];
-    }
-
-    private function _name($name)
+    private function handleError(XmlElement $element)
     {
-        $namespace = null;
-        if(($pos = strpos($name, ':')) !== false) {
-            $namespace = substr($name, 0, $pos);
-            $name = substr($name, $pos + 1);
-        }
-
-        return [$name, $namespace];
-    }
-
-    private function _lookup($prefix, $namespaces)
-    {
-        if($prefix === 'xmlns') {
-            return 'http://www.w3.org/2000/xmlns/';
-        }
-
-        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->stack)->lookupNamespaceUri($prefix);
-    }
-
-    private function _element($name, $attrs)
-    {
-        list($attributes, $namespaces) = $this->_attributes($attrs);
-        list($tag, $prefix) = $this->_name($name);
-
-        $uri = $this->_lookup($prefix, $namespaces);
-        $class = $this->factory->lookup($uri, $tag);
-
-        /** @var XmlElement $element */
-        $element = $this->stream->importNode(new $class($name, null, $uri), true);
-
-        foreach ($attributes as $name => $value) {
-            $element->setAttribute($name, $value);
-        }
-
-        return $element;
-    }
-
-    private function handleElementStart($name, $attrs) {
-        $element = $this->_element($name, $attrs);
-
-        if($element->localName === 'stream' && $element->namespaceURI === static::NAMESPACE_URI) {
-            $this->stream->appendChild($element);
-            $this->emit('stream:open', [ $this ]);
-        } elseif(count($this->stack) > 1) {
-            end($this->stack)->appendChild($element);
-        }
-
-        $this->stack[] = $element;
-    }
-
-    private function handleElementEnd($name) {
-        if(empty($this->stack) === null) {
-            return;
-        }
-
-        $element = array_pop($this->stack);
-        if(count($this->stack) == 1) {
-            $this->emit('element', [ $element ]);
-        }
-    }
-
-    private function handleTextData($data) {
-        if(trim($data)) {
-            end($this->stack)->appendChild(new \DOMText($data));
+        if($element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI) {
+            $this->emit('stream:error', [ $element ]);
         }
     }
 
@@ -162,7 +75,7 @@ class XmlStream extends CompositeStream
 
     public function start(array $attributes = [])
     {
-        $this->init();
+        $this->parser->reset();
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
 
@@ -187,31 +100,6 @@ class XmlStream extends CompositeStream
         return $this->isOpened;
     }
 
-    protected function setupParser()
-    {
-        $this->parser = xml_parser_create();
-
-        xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, 1);
-        xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, 0);
-
-        xml_set_element_handler($this->parser, function ($parser, $name, $attrs) {
-            $this->handleElementStart($name, $attrs);
-        }, function ($parser, $name) {
-            $this->handleElementEnd($name);
-        });
-
-        xml_set_character_data_handler($this->parser, function ($parser, $data) {
-            $this->handleTextData($data);
-        });
-    }
-
-    private function handleError(XmlElement $element)
-    {
-        if($element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI) {
-            $this->emit('stream:error', [ $element ]);
-        }
-    }
-
     public function __get($name)
     {
         return $this->stream->documentElement->getAttribute($name === 'lang' ? 'xml:lang' : $name);
@@ -226,4 +114,5 @@ class XmlStream extends CompositeStream
     {
         return $this->stream->documentElement->hasAttribute($name);
     }
+
 }

@@ -18,20 +18,23 @@ namespace Kadet\Xmpp;
 
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Features;
+use Kadet\Xmpp\Utils\Logging;
 use Kadet\Xmpp\Xml\XmlElement;
-use Kadet\Xmpp\Xml\XmlElementFactory;
+use Kadet\Xmpp\Xml\XmlParser;
 use Kadet\Xmpp\Xml\XmlStream;
 use React\Stream\DuplexStreamInterface;
 
 class XmppStream extends XmlStream
 {
+    use Logging;
+
     private $_attributes = [];
 
-    public function __construct(XmlElementFactory $factory, DuplexStreamInterface $stream)
+    public function __construct(XmlParser $parser, DuplexStreamInterface $stream)
     {
-        parent::__construct($factory, $stream);
+        parent::__construct($parser, $stream);
 
-        $this->factory->register(Features::class, self::NAMESPACE_URI, 'features');
+        $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
 
         $this->on('element', function (XmlElement $element) {
             if($element instanceof Features) {
@@ -41,6 +44,7 @@ class XmppStream extends XmlStream
                 $element->localName === 'proceed'
             ) {
                 $this->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
                 $this->restart();
             }
         });
@@ -61,20 +65,16 @@ class XmppStream extends XmlStream
         $this->start($this->_attributes);
     }
 
-    private function processElement(XmlElement $element)
-    {
-        
-    }
-
     private function handleFeatures(Features $element)
     {
         if($element->startTls >= Features::TLS_AVAILABLE) {
             if($this->readable instanceof SecureStream && $this->writable instanceof SecureStream) {
                 $this->write(XmlElement::create('starttls', null, 'urn:ietf:params:xml:ns:xmpp-tls'));
+                return; // Stop processing
             } elseif($element->startTls === Features::TLS_REQUIRED) {
                 throw new \LogicException('Encryption is not available, but server requires it.');
             } else {
-                // todo: warning
+                $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
         }
     }

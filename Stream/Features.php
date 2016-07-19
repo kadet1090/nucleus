@@ -19,6 +19,12 @@ namespace Kadet\Xmpp\Stream;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 
+/**
+ * Class Features
+ * @package Kadet\Xmpp\Stream
+ *
+ * @property-read int startTls
+ */
 class Features extends XmlElement
 {
     const TLS_UNAVAILABLE = false;
@@ -34,7 +40,7 @@ class Features extends XmlElement
         }
 
         $element = $startTls[0];
-        if($element->hasAttribute('required')) {
+        if(count($element->elements('required'))) {
             return self::TLS_REQUIRED;
         }
 
