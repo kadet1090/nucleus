@@ -22,22 +22,17 @@ trait BetterEmitter
 {
     use EventEmitterTrait {
         on   as private emitterOn;
+        once as private emitterOnce;
     }
 
     public function on($event, callable $listener, $condition = null)
     {
-        if ($condition !== null) {
-            $callable  = $listener;
-            $condition = $this->emitterResolveCondition($condition);
+        $this->emitterOn($event, $this->getCallable($listener, $condition));
+    }
 
-            $listener = function (...$arguments) use ($callable, $condition) {
-                if ($condition(...$arguments)) {
-                    $callable(...$arguments);
-                }
-            };
-        }
-
-        $this->emitterOn($event, $listener);
+    public function once($event, callable $listener, $condition = null)
+    {
+        $this->emitterOnce($event, $this->getCallable($listener, $condition));
     }
 
     public function emit($event, array $arguments = [])
@@ -47,6 +42,20 @@ trait BetterEmitter
                 break;
             }
         }
+    }
+
+    private function getCallable(callable $listener, $condition) : callable
+    {
+        if ($condition === null) {
+            return $listener;
+        }
+
+        $condition = $this->emitterResolveCondition($condition);
+        return function (...$arguments) use ($listener, $condition) {
+            if ($condition(...$arguments)) {
+                $listener(...$arguments);
+            }
+        };
     }
 
     protected function emitterResolveCondition($condition) : callable
