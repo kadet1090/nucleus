@@ -27,6 +27,8 @@ use Kadet\Xmpp\Utils\filter as with;
 
 class XmppStream extends XmlStream
 {
+    const TLS_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-tls';
+
     use Logging;
 
     private $_attributes = [];
@@ -40,7 +42,7 @@ class XmppStream extends XmlStream
         $this->on('element', function (Features $element) { $this->handleFeatures($element); }, Features::class);
         $this->on('element', function (XmlElement $element) {
             $this->handleTls($element);
-        }, with\xmlns('urn:ietf:params:xml:ns:xmpp-tls'));
+        }, with\xmlns(self::TLS_NAMESPACE));
     }
 
     public function start(array $attributes = [])
@@ -62,7 +64,7 @@ class XmppStream extends XmlStream
     {
         if ($element->startTls >= Features::TLS_AVAILABLE) {
             if ($this->readable instanceof SecureStream && $this->writable instanceof SecureStream) {
-                $this->write(XmlElement::create('starttls', null, 'urn:ietf:params:xml:ns:xmpp-tls'));
+                $this->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
 
                 return; // Stop processing
             } elseif ($element->startTls === Features::TLS_REQUIRED) {

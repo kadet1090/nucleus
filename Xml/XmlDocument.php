@@ -19,6 +19,9 @@ use DOMNode;
 
 class XmlDocument extends \DOMDocument
 {
+    /** @var \DOMXPath  */
+    public $xpath;
+
     /**
      * @param DOMNode $importedNode
      * @param null $deep
@@ -30,5 +33,14 @@ class XmlDocument extends \DOMDocument
         $this->registerNodeClass('DOMElement', get_class($importedNode));
 
         return parent::importNode($importedNode, $deep);
+    }
+
+    public function __construct($version = '1.0', $encoding = 'utf-8')
+    {
+        parent::__construct($version, $encoding);
+
+        $this->xpath = new \DOMXPath($this);
+        $this->xpath->registerNamespace("php", "http://php.net/xpath");
+        $this->xpath->registerPhpFunctions();
     }
 }
