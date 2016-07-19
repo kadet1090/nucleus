@@ -36,6 +36,7 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 {
     use BetterEmitter;
 
+    /** XML namespace of stream */
     const NAMESPACE_URI = 'http://etherx.jabber.org/streams';
 
     /**
@@ -44,14 +45,32 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
      * @var XmlParser
      */
     protected $parser;
+
+    /**
+     * @var bool
+     *
+     * @see XmlStream::isOpened
+     */
     private $isOpened = false;
 
-    /** @var XmlElement  */
+    /**
+     * Stream root element
+     *
+     * @var XmlElement
+     */
     private $stream;
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $stream)
+    /**
+     * XmlStream constructor.
+     *
+     * Xml Stream acts like stream wrapper, that uses $transport stream to communicate with server.
+     *
+     * @param XmlParser             $parser    XmlParser instance used for converting XML to objects
+     * @param DuplexStreamInterface $transport Stream used as the transport
+     */
+    public function __construct(XmlParser $parser, DuplexStreamInterface $transport)
     {
-        parent::__construct($stream, $stream);
+        parent::__construct($transport, $transport);
 
         $this->parser = $parser;
 
@@ -70,11 +89,13 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
         Util::forwardEvents($this->parser, $this, ['element']);
     }
 
-    private function handleError(XmlElement $element)
-    {
-        $this->emit('stream.error', [ $element ]);
-    }
-
+    /**
+     * Writes data to stream
+     *
+     * @param  string $data Data to write
+     *
+     * @return bool
+     */
     public function write($data)
     {
         $this->emit('send.'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
@@ -82,6 +103,11 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
         return parent::write($data);
     }
 
+    /**
+     * Starts new stream with specified attributes
+     *
+     * @param array $attributes Stream attributes
+     */
     public function start(array $attributes = [])
     {
         $this->parser->reset();
@@ -97,6 +123,9 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
         $this->isOpened = true;
     }
 
+    /**
+     * Gently closes stream
+     */
     public function close()
     {
         $this->write('</stream:stream>');
@@ -105,6 +134,11 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
         parent::close();
     }
 
+    /**
+     * Checks if stream is opened
+     *
+     * @return bool
+     */
     public function isOpened()
     {
         return $this->isOpened;
@@ -123,5 +157,10 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
     public function __isset($name)
     {
         return $this->stream->hasAttribute($name);
+    }
+
+    private function handleError(XmlElement $element)
+    {
+        $this->emit('stream.error', [ $element ]);
     }
 }

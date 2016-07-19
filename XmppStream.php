@@ -33,9 +33,9 @@ class XmppStream extends XmlStream
 
     private $_attributes = [];
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $stream)
+    public function __construct(XmlParser $parser, DuplexStreamInterface $transport)
     {
-        parent::__construct($parser, $stream);
+        parent::__construct($parser, $transport);
 
         $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
 
