@@ -23,7 +23,7 @@ use Kadet\Xmpp\Xml\XmlElement;
  * Class Features
  * @package Kadet\Xmpp\Stream
  *
- * @property-read int startTls
+ * @property-read int $startTls
  */
 class Features extends XmlElement
 {

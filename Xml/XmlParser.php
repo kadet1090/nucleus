@@ -17,7 +17,7 @@ namespace Kadet\Xmpp\Xml;
 
 
 use Evenement\EventEmitterInterface;
-use Evenement\EventEmitterTrait;
+use Kadet\Xmpp\Utils\BetterEmitter;
 
 /**
  * Class XmlParser
@@ -27,7 +27,7 @@ use Evenement\EventEmitterTrait;
  */
 class XmlParser implements EventEmitterInterface
 {
-    use EventEmitterTrait;
+    use BetterEmitter;
 
     /**
      * Factory used for XML element creation
@@ -157,6 +157,7 @@ class XmlParser implements EventEmitterInterface
         if(count($this->stack) > 1) {
             end($this->stack)->appendChild($element);
         }
+        $this->emit('parse.begin', [ $element ]);
 
         $this->stack[] = $element;
     }

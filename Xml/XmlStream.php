@@ -8,7 +8,7 @@
 namespace Kadet\Xmpp\Xml;
 
 use Evenement\EventEmitterInterface;
-use Evenement\EventEmitterTrait;
+use Kadet\Xmpp\Utils\BetterEmitter;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\Util;
@@ -20,8 +20,10 @@ use React\Stream\Util;
  * @package Kadet\Xmpp\Xml
  *
  * @event element
- * @event stream:error
- * @event stream:open
+ * @event stream.error
+ * @event stream.open
+ * @event send.element
+ * @event send.text
  *
  * @property-read $id
  * @property-read $from
@@ -31,7 +33,7 @@ use React\Stream\Util;
  */
 class XmlStream extends CompositeStream implements EventEmitterInterface
 {
-    use EventEmitterTrait;
+    use BetterEmitter;
 
     const NAMESPACE_URI = 'http://etherx.jabber.org/streams';
 
@@ -41,19 +43,30 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
      * @var XmlParser
      */
     protected $parser;
-
-    /** @var \DOMDocument */
-    private $stream;
-
     private $isOpened = false;
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $stream) {
-        $this->parser = $parser;
+    /** @var XmlElement  */
+    private $stream;
 
+    public function __construct(XmlParser $parser, DuplexStreamInterface $stream) {
         parent::__construct($stream, $stream);
 
+        $this->parser = $parser;
+
+        $this->on('element', function(XmlElement $element) {
+            $this->handleError($element);
+        }, function(XmlElement $element) {
+            return $element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI;
+        });
+
+        $this->parser->on('parse.begin', function(XmlElement $stream) {
+            $this->stream = $stream;
+            $this->emit('stream.open', [ $stream ]);
+        }, function(XmlElement $stream) {
+            return $stream->localName === 'stream' && $stream->namespaceURI === static::NAMESPACE_URI;
+        });
+
         $this->on('data', [$this->parser, 'parse']);
-        $this->on('element', function(XmlElement $element) { $this->handleError($element); });
         $this->on('close', function () { $this->isOpened = false; });
 
         Util::forwardEvents($this->parser, $this, ['element']);
@@ -61,14 +74,12 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 
     private function handleError(XmlElement $element)
     {
-        if($element->localName === 'error' && $element->namespaceURI === static::NAMESPACE_URI) {
-            $this->emit('stream:error', [ $element ]);
-        }
+        $this->emit('stream.error', [ $element ]);
     }
 
     public function write($data)
     {
-        $this->emit('send:'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
+        $this->emit('send.'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
 
         return parent::write($data);
     }
@@ -102,7 +113,7 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 
     public function __get($name)
     {
-        return $this->stream->documentElement->getAttribute($name === 'lang' ? 'xml:lang' : $name);
+        return $this->stream->getAttribute($name === 'lang' ? 'xml:lang' : $name);
     }
 
     public function __set($name, $value)
@@ -112,7 +123,7 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 
     public function __isset($name)
     {
-        return $this->stream->documentElement->hasAttribute($name);
+        return $this->stream->hasAttribute($name);
     }
 
 }
