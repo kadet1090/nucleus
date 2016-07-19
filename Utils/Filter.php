@@ -13,52 +13,49 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Utils;
+namespace Kadet\Xmpp\Utils\filter;
 
 
 use Kadet\Xmpp\Xml\XmlElement;
 
-abstract class Filter
-{
-    public static function xmlns($uri) {
-        return function (XmlElement $element) use($uri) {
-            return $element->namespaceURI === $uri;
-        };
-    }
+function xmlns($uri) {
+    return function (XmlElement $element) use($uri) {
+        return $element->namespaceURI === $uri;
+    };
+}
 
-    public static function tag($name) {
-        return function (XmlElement $element) use($name) {
-            return $element->localName === $name;
-        };
-    }
+function tag($name) {
+    return function (XmlElement $element) use($name) {
+        return $element->localName === $name;
+    };
+}
 
-    public static function typeof($class) {
-        return function ($element) use($class) {
-            return $element instanceof $class;
-        };
-    }
+function typeof($class) {
+    return function ($element) use($class) {
+        return $element instanceof $class;
+    };
+}
 
-    public static function all(callable ...$functions) {
-        return function (...$args) use($functions) {
-            foreach ($functions as $function) {
-                if(!$function(...$args)) {
-                    return false;
-                }
+function all(callable ...$functions) {
+    return function (...$args) use($functions) {
+        foreach ($functions as $function) {
+            if(!$function(...$args)) {
+                return false;
             }
+        }
 
-            return true;
-        };
-    }
+        return true;
+    };
+}
 
-    public static function oneOf(callable ...$functions) {
-        return function (...$args) use($functions) {
-            foreach ($functions as $function) {
-                if($function(...$args)) {
-                    return true;
-                }
+function oneOf(callable ...$functions) {
+    return function (...$args) use($functions) {
+        foreach ($functions as $function) {
+            if($function(...$args)) {
+                return true;
             }
+        }
 
-            return false;
-        };
-    }
+        return false;
+    };
 }

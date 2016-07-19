@@ -15,7 +15,7 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
+use Kadet\Xmpp\Utils\filter as with;
 use Evenement\EventEmitterTrait;
 
 trait BetterEmitter
@@ -54,7 +54,7 @@ trait BetterEmitter
         if(is_callable($condition)) {
             return $condition;
         } elseif(class_exists($condition)) {
-            return Filter::typeof($condition);
+            return with\typeof($condition);
         } else {
             throw new \Exception(); // todo: exception
         }

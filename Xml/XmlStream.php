@@ -9,11 +9,11 @@ namespace Kadet\Xmpp\Xml;
 
 use Evenement\EventEmitterInterface;
 use Kadet\Xmpp\Utils\BetterEmitter;
-use Kadet\Xmpp\Utils\Filter;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\Util;
 
+use Kadet\Xmpp\Utils\filter as with;
 
 /**
  * Class XmlStream
@@ -56,12 +56,12 @@ class XmlStream extends CompositeStream implements EventEmitterInterface
 
         $this->on('element', function(XmlElement $element) {
             $this->handleError($element);
-        }, Filter::all(Filter::tag('error'), Filter::xmlns(self::NAMESPACE_URI)));
+        }, with\all(with\tag('error'), with\xmlns(self::NAMESPACE_URI)));
 
         $this->parser->on('parse.begin', function(XmlElement $stream) {
             $this->stream = $stream;
             $this->emit('stream.open', [ $stream ]);
-        }, Filter::all(Filter::tag('stream'), Filter::xmlns(self::NAMESPACE_URI)));
+        }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
 
         $this->on('data', [$this->parser, 'parse']);
         $this->on('close', function () { $this->isOpened = false; });

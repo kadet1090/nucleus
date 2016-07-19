@@ -20,7 +20,10 @@
   "autoload": {
     "psr-4": {
       "Kadet\\Xmpp\\": "."
-    }
+    },
+    "files": [
+      "Utils/Filter.php"
+    ]
   },
   "minimum-stability": "dev"
 }
