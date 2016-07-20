@@ -17,6 +17,7 @@ namespace Kadet\Xmpp;
 
 use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
+use Kadet\Xmpp\Stream\Error;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Logging;
 use Kadet\Xmpp\Xml\XmlElement;
@@ -38,6 +39,7 @@ class XmppStream extends XmlStream
         parent::__construct($parser, $transport);
 
         $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
+        $this->parser->factory->register(Error::class, self::NAMESPACE_URI, 'error');
 
         $this->on('element', function (Features $element) { $this->handleFeatures($element); }, Features::class);
         $this->on('element', function (XmlElement $element) {

@@ -67,20 +67,24 @@ class XmlElement extends \DOMElement
      * Returns one element at specified index (for default the first one).
      *
      * @param string $name  Requested element tag name
-     * @param null   $uri   Requested element namespace
+     * @param string $uri   Requested element namespace
      * @param int    $index Index of element to retrieve
      *
      * @return XmlElement|false Retrieved element
      */
-    public function element($name, $uri = null, $index = 0)
+    public function element(string $name, string $uri = null, int $index = 0)
     {
         $nodes = $uri === null ? $this->getElementsByTagName($name) : $this->getElementsByTagNameNS($uri, $name);
 
         return $nodes->item($index < 0 ? $nodes->length + $index : $index) ?: false;
     }
 
-    public function query($query)
+    /**
+     * @param string|null $query
+     * @return XPathQuery
+     */
+    public function query(string $query = null)
     {
-        return iterator_to_array($this->ownerDocument->xpath->query($query, $this)); // todo: substitute with some iterator
+        return new XPathQuery($this->ownerDocument, $query, $this);
     }
 }
