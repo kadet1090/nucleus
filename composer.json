@@ -6,9 +6,11 @@
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
     "evenement/evenement": "2.0.*",
-    "kadet/keylighter": "dev-master",
     "monolog/monolog": "^1.20",
     "bramus/monolog-colored-line-formatter": "~2.0"
+  },
+  "require-dev": {
+    "kadet/keylighter": "dev-master"
   },
   "license": "MIT",
   "authors": [
