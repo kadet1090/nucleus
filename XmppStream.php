@@ -33,13 +33,16 @@ class XmppStream extends XmlStream
     use Logging;
 
     private $_attributes = [];
+    private $_lang;
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $transport)
+    public function __construct(XmlParser $parser, DuplexStreamInterface $transport, string $lang = 'en')
     {
         parent::__construct($parser, $transport);
 
         $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
         $this->parser->factory->register(Error::class, self::NAMESPACE_URI, 'error');
+
+        $this->_lang = $lang;
 
         $this->on('element', function (Features $element) { $this->handleFeatures($element); }, Features::class);
         $this->on('element', function (XmlElement $element) {
@@ -52,8 +55,9 @@ class XmppStream extends XmlStream
         $this->_attributes = $attributes;
 
         parent::start(array_merge([
-            'xmlns'   => 'jabber:client',
-            'version' => '1.0'
+            'xmlns'    => 'jabber:client',
+            'version'  => '1.0',
+            'xml:lang' => $this->_lang
         ], $attributes));
     }
 
