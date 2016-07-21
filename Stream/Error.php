@@ -19,6 +19,15 @@ namespace Kadet\Xmpp\Stream;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 
+/**
+ * Class Error
+ * @package Kadet\Xmpp\Stream
+ *
+ * @property-read string $kind Stream error defined condition
+ * @property-read string $text Stream error text description
+ *
+ * @see http://xmpp.org/rfcs/rfc6120.html#streams-error-syntax
+ */
 class Error extends XmlElement
 {
     use Accessors;
@@ -30,6 +39,6 @@ class Error extends XmlElement
 
     public function getText()
     {
-        return $this->query("./xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)->localName;
+        return $this->query(".//xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)->localName;
     }
 }
