@@ -40,7 +40,7 @@ class XmppStream extends XmlStream
         parent::__construct($parser, $transport);
 
         $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
-        $this->parser->factory->register(Error::class, self::NAMESPACE_URI, 'error');
+        $this->parser->factory->register(Error::class,    self::NAMESPACE_URI, 'error');
 
         $this->_lang = $lang;
 

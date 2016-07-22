@@ -1,5 +1,5 @@
 {
-  "name": "kadet/u-xmpp",
+  "name": "kadet/nucleus",
   "type": "library",
   "description": "",
   "require": {
@@ -11,7 +11,8 @@
   "require-dev": {
     "kadet/keylighter": "dev-master",
     "bramus/monolog-colored-line-formatter": "~2.0",
-    "monolog/monolog": "^1.20"
+    "monolog/monolog": "^1.20",
+    "phpunit/phpunit": "^5.4"
   },
   "license": "MIT",
   "authors": [

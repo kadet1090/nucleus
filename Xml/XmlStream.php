@@ -7,9 +7,9 @@
 
 namespace Kadet\Xmpp\Xml;
 
-use Evenement\EventEmitterInterface;
 use Kadet\Xmpp\Exception\ReadOnlyException;
 use Kadet\Xmpp\Utils\BetterEmitter;
+use Kadet\Xmpp\Utils\BetterEmitterInterface;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\Util;
@@ -32,7 +32,7 @@ use Kadet\Xmpp\Utils\filter as with;
  * @property-read $version
  * @property-read $lang
  */
-class XmlStream extends CompositeStream implements EventEmitterInterface
+class XmlStream extends CompositeStream implements BetterEmitterInterface
 {
     use BetterEmitter;
 

@@ -21,19 +21,31 @@ use Evenement\EventEmitterTrait;
 
 trait BetterEmitter
 {
-    use EventEmitterTrait {
-        on   as private emitterOn;
-        once as private emitterOnce;
+    /**
+     * @var PriorityCollection[]
+     */
+    protected $listeners;
+
+    use EventEmitterTrait;
+
+    public function on($event, callable $listener, $condition = null, int $priority = 0)
+    {
+        $this->addListener($event, $this->getConditionalCallable($listener, $condition), $priority);
     }
 
-    public function on($event, callable $listener, $condition = null)
+    public function once($event, callable $listener, $condition = null, int $priority = 0)
     {
-        $this->emitterOn($event, $this->getCallable($listener, $condition));
+        $this->on($event, $this->getOnceCallable($listener, $event), $condition, $priority);
     }
 
-    public function once($event, callable $listener, $condition = null)
+    public function removeListener($event, callable $listener)
     {
-        $this->emitterOnce($event, $this->getCallable($listener, $condition));
+        if(!isset($this->listeners[$event])) {
+            return false;
+        }
+
+        $this->listeners[$event]->remove($listener);
+        return true;
     }
 
     public function emit($event, array $arguments = [])
@@ -45,7 +57,16 @@ trait BetterEmitter
         }
     }
 
-    private function getCallable(callable $listener, $condition) : callable
+    private function addListener($event, callable $listener, int $priority = 0)
+    {
+        if(!isset($this->listeners[$event])) {
+            $this->listeners[$event] = new PriorityCollection();
+        }
+
+        $this->listeners[$event]->insert($listener, $priority);
+    }
+
+    private function getConditionalCallable(callable $listener, $condition) : callable
     {
         if ($condition === null) {
             return $listener;
@@ -56,6 +77,15 @@ trait BetterEmitter
             if ($condition(...$arguments)) {
                 $listener(...$arguments);
             }
+        };
+    }
+
+    private function getOnceCallable(callable $listener, $event) : callable
+    {
+        return $onceListener = function (...$arguments) use (&$onceListener, $event, $listener) {
+            $this->removeListener($event, $onceListener);
+
+            $listener(...$arguments);
         };
     }
 

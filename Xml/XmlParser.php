@@ -15,8 +15,8 @@
 
 namespace Kadet\Xmpp\Xml;
 
-use Evenement\EventEmitterInterface;
 use Kadet\Xmpp\Utils\BetterEmitter;
+use Kadet\Xmpp\Utils\BetterEmitterInterface;
 
 /**
  * Class XmlParser
@@ -24,7 +24,7 @@ use Kadet\Xmpp\Utils\BetterEmitter;
  *
  * @event element
  */
-class XmlParser implements EventEmitterInterface
+class XmlParser implements BetterEmitterInterface
 {
     use BetterEmitter;
 
@@ -81,7 +81,7 @@ class XmlParser implements EventEmitterInterface
         xml_set_element_handler($this->parser, function ($parser, $name, $attrs) {
             $this->handleElementStart($name, $attrs);
         }, function ($parser, $name) {
-            $this->handleElementEnd($name);
+            $this->handleElementEnd();
         });
 
         xml_set_character_data_handler($this->parser, function ($parser, $data) {
@@ -164,7 +164,7 @@ class XmlParser implements EventEmitterInterface
         $this->stack[] = $element;
     }
 
-    private function handleElementEnd($name)
+    private function handleElementEnd()
     {
         if (empty($this->stack) === null) {
             return;
