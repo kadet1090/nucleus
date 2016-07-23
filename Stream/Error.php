@@ -39,6 +39,10 @@ class Error extends XmlElement
 
     public function getText()
     {
-        return $this->query(".//xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)->localName;
+        if($text = $this->query(".//xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)) {
+            return $text;
+        }
+
+        return null;
     }
 }

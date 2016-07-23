@@ -27,7 +27,7 @@ class PriorityCollectionTest extends \PHPUnit_Framework_TestCase
         $collection->insert(1, 1);
         $collection->insert(-1, -1);
 
-        $this->assertEquals([-1, 0, 1], iterator_to_array($collection));
+        $this->assertEquals([1, 0, -1], iterator_to_array($collection));
     }
 
     public function testRemoval()

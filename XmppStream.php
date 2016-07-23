@@ -19,7 +19,6 @@ use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Error;
 use Kadet\Xmpp\Stream\Features;
-use Kadet\Xmpp\Utils\Logging;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XmlParser;
 use Kadet\Xmpp\Xml\XmlStream;
@@ -29,8 +28,6 @@ use Kadet\Xmpp\Utils\filter as with;
 class XmppStream extends XmlStream
 {
     const TLS_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-tls';
-
-    use Logging;
 
     private $_attributes = [];
     private $_lang;

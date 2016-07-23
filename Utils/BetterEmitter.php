@@ -52,9 +52,11 @@ trait BetterEmitter
     {
         foreach ($this->listeners($event) as $listener) {
             if ($listener(...$arguments) === false) {
-                break;
+                return false;
             }
         }
+
+        return true;
     }
 
     private function addListener($event, callable $listener, int $priority = 0)

@@ -72,7 +72,7 @@ class PriorityCollection implements \IteratorAggregate, \Countable
     private function rebuildCache()
     {
         usort($this->_collection, function($a, $b) {
-            return $a[0] <=> $b[0];
+            return $b[0] <=> $a[0];
         });
 
         $this->_cache = array_column($this->_collection, 1);

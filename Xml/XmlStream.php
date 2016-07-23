@@ -7,9 +7,11 @@
 
 namespace Kadet\Xmpp\Xml;
 
+use Kadet\Xmpp\Exception\Protocol\StreamErrorException;
 use Kadet\Xmpp\Exception\ReadOnlyException;
+use Kadet\Xmpp\Stream\Error;
 use Kadet\Xmpp\Utils\BetterEmitter;
-use Kadet\Xmpp\Utils\BetterEmitterInterface;
+use Kadet\Xmpp\Utils\Logging;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\Util;
@@ -32,9 +34,9 @@ use Kadet\Xmpp\Utils\filter as with;
  * @property-read $version
  * @property-read $lang
  */
-class XmlStream extends CompositeStream implements BetterEmitterInterface
+class XmlStream extends CompositeStream // implements BetterEmitterInterface // Some php cancer
 {
-    use BetterEmitter;
+    use BetterEmitter, Logging;
 
     /** XML namespace of stream */
     const NAMESPACE_URI = 'http://etherx.jabber.org/streams';
@@ -74,9 +76,9 @@ class XmlStream extends CompositeStream implements BetterEmitterInterface
 
         $this->parser = $parser;
 
-        $this->on('element', function (XmlElement $element) {
+        $this->on('element', function (Error $element) {
             $this->handleError($element);
-        }, with\all(with\tag('error'), with\xmlns(self::NAMESPACE_URI)));
+        }, with\ofType(Error::class));
 
         $this->parser->on('parse.begin', function (XmlElement $stream) {
             $this->stream = $stream;
@@ -159,8 +161,12 @@ class XmlStream extends CompositeStream implements BetterEmitterInterface
         return $this->stream->hasAttribute($name);
     }
 
-    private function handleError(XmlElement $element)
+    private function handleError(Error $element)
     {
-        $this->emit('stream.error', [ $element ]);
+        if($this->emit('stream.error', [ $element ])) {
+            throw new StreamErrorException($element);
+        }
+
+        return false;
     }
 }
