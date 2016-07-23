@@ -14,7 +14,6 @@ use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\Logging;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
-use React\Stream\Util;
 use Kadet\Xmpp\Utils\filter as with;
 
 /**
@@ -76,19 +75,25 @@ class XmlStream extends CompositeStream // implements BetterEmitterInterface // 
 
         $this->parser = $parser;
 
-        $this->on('element', function (Error $element) {
-            $this->handleError($element);
+        $this->on('element', function (XmlStream $stream, Error $element) {
+            $this->handleError($stream, $element);
         }, with\ofType(Error::class));
 
-        $this->parser->on('parse.begin', function (XmlElement $stream) {
+        $this->parser->on('parse.begin', function (XmlParser $parser, XmlElement $stream) {
             $this->stream = $stream;
-            $this->emit('stream.open', [ $stream ]);
+            $this->emit('stream.open', [ $this, $stream ]);
+        }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
+
+        $this->parser->on('parse.end', function (XmlParser $parser, XmlElement $stream) {
+            $this->emit('stream.close', [ $this, $stream ]);
+            $this->stream = null;
         }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
 
         $this->on('data', [$this->parser, 'parse']);
+        $this->parser->on('element', function ($parser, ...$arguments) {
+            $this->emit('element', array_merge([ $this ], $arguments));
+        });
         $this->on('close', function () { $this->isOpened = false; });
-
-        Util::forwardEvents($this->parser, $this, ['element']);
     }
 
     /**
@@ -100,7 +105,7 @@ class XmlStream extends CompositeStream // implements BetterEmitterInterface // 
      */
     public function write($data)
     {
-        $this->emit('send.'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
+        $this->emit('send.'.($data instanceof XmlElement ? 'element' : 'text'), [ $this, $data ]);
 
         return parent::write($data);
     }
@@ -130,8 +135,10 @@ class XmlStream extends CompositeStream // implements BetterEmitterInterface // 
      */
     public function close()
     {
-        $this->write('</stream:stream>');
-        $this->isOpened = false;
+        if($this->isOpened()) {
+            $this->write('</stream:stream>');
+            $this->isOpened = false;
+        }
 
         parent::close();
     }
@@ -161,9 +168,9 @@ class XmlStream extends CompositeStream // implements BetterEmitterInterface // 
         return $this->stream->hasAttribute($name);
     }
 
-    private function handleError(Error $element)
+    private function handleError(XmlStream $stream, Error $element)
     {
-        if($this->emit('stream.error', [ $element ])) {
+        if($this->emit('stream.error', [ $this, $element ])) {
             throw new StreamErrorException($element);
         }
 

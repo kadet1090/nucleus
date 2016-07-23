@@ -159,7 +159,7 @@ class XmlParser implements BetterEmitterInterface
         if (count($this->stack) > 1) {
             end($this->stack)->appendChild($element);
         }
-        $this->emit('parse.begin', [ $element ]);
+        $this->emit('parse.begin', [ $this, $element ]);
 
         $this->stack[] = $element;
     }
@@ -172,8 +172,10 @@ class XmlParser implements BetterEmitterInterface
 
         $element = array_pop($this->stack);
         if (count($this->stack) == 1) {
-            $this->emit('element', [ $element ]);
+            $this->emit('element', [ $this, $element ]);
         }
+
+        $this->emit('parse.end', [ $this, $element ]);
     }
 
     private function handleTextData($data)

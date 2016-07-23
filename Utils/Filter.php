@@ -19,21 +19,21 @@ use Kadet\Xmpp\Xml\XmlElement;
 
 function xmlns($uri)
 {
-    return function (XmlElement $element) use ($uri) {
+    return function ($sender, XmlElement $element) use ($uri) {
         return $element->namespaceURI === $uri;
     };
 }
 
 function tag($name)
 {
-    return function (XmlElement $element) use ($name) {
+    return function ($sender, XmlElement $element) use ($name) {
         return $element->localName === $name;
     };
 }
 
 function ofType($class)
 {
-    return function ($element) use ($class) {
+    return function ($sender, $element) use ($class) {
         return $element instanceof $class;
     };
 }

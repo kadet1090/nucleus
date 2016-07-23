@@ -41,9 +41,12 @@ class XmppStream extends XmlStream
 
         $this->_lang = $lang;
 
-        $this->on('element', function (Features $element) { $this->handleFeatures($element); }, Features::class);
-        $this->on('element', function (XmlElement $element) {
-            $this->handleTls($element);
+        $this->on('element', function (XmppStream $stream, Features $element) {
+            $this->handleFeatures($stream, $element);
+        }, Features::class);
+
+        $this->on('element', function (XmppStream $stream, XmlElement $element) {
+            $this->handleTls($stream, $element);
         }, with\xmlns(self::TLS_NAMESPACE));
     }
 
@@ -63,30 +66,30 @@ class XmppStream extends XmlStream
         $this->start($this->_attributes);
     }
 
-    private function handleFeatures(Features $element)
+    private function handleFeatures(XmppStream $stream, Features $element)
     {
         if ($element->startTls >= Features::TLS_AVAILABLE) {
-            if ($this->readable instanceof SecureStream && $this->writable instanceof SecureStream) {
-                $this->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
+            if ($stream->readable instanceof SecureStream && $stream->writable instanceof SecureStream) {
+                $stream->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
 
                 return; // Stop processing
             } elseif ($element->startTls === Features::TLS_REQUIRED) {
                 throw new TlsException('Encryption is not available, but server requires it.');
             } else {
-                $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
+                $stream->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
         }
     }
 
-    private function handleTls(XmlElement $response)
+    private function handleTls(XmppStream $stream, XmlElement $response)
     {
         if ($response->localName === 'proceed') {
             // this function is called only by event, which can be only fired after instanceof check
             /** @noinspection PhpUndefinedMethodInspection */
-            $this->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $stream->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
             /** @noinspection PhpUndefinedMethodInspection */
-            $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
-            $this->restart();
+            $stream->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $stream->restart();
         } else {
             throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened
         }
