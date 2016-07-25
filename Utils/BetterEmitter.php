@@ -59,6 +59,11 @@ trait BetterEmitter
         return true;
     }
 
+    public function reference(callable $callable, int $position = 0) : callable
+    {
+        return \Kadet\Xmpp\Utils\helper\partial($callable, $this, $position);
+    }
+
     private function addListener($event, callable $listener, int $priority = 0)
     {
         if(!isset($this->listeners[$event])) {

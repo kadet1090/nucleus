@@ -31,3 +31,16 @@ function typeof($value) : string
         return gettype($value);
     }
 }
+
+function partial(callable $callable, $argument, int $position = 0) : callable
+{
+    return function(...$arguments) use ($callable, $argument, $position) {
+        $arguments = array_merge(
+            array_slice($arguments, 0, $position),
+            [ $argument ],
+            array_slice($arguments, $position)
+        );
+
+        return $callable(...$arguments);
+    };
+}

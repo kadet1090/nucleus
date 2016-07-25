@@ -19,22 +19,22 @@ use Kadet\Xmpp\Xml\XmlElement;
 
 function xmlns($uri)
 {
-    return function ($sender, XmlElement $element) use ($uri) {
+    return function (XmlElement $element) use ($uri) {
         return $element->namespaceURI === $uri;
     };
 }
 
 function tag($name)
 {
-    return function ($sender, XmlElement $element) use ($name) {
+    return function (XmlElement $element) use ($name) {
         return $element->localName === $name;
     };
 }
 
 function ofType($class)
 {
-    return function ($sender, $element) use ($class) {
-        return $element instanceof $class;
+    return function ($object) use ($class) {
+        return $object instanceof $class;
     };
 }
 
@@ -51,7 +51,7 @@ function all(callable ...$functions)
     };
 }
 
-function oneOf(callable ...$functions)
+function any(callable ...$functions)
 {
     return function (...$args) use ($functions) {
         foreach ($functions as $function) {

@@ -1,7 +1,8 @@
 {
   "name": "kadet/nucleus",
   "type": "library",
-  "description": "",
+  "description": "Asynchronous XMPP Library for PHP",
+  "keywords": ["xmpp", "async", "react", "jabber", "im"],
   "require": {
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
