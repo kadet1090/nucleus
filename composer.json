@@ -4,13 +4,14 @@
   "description": "Asynchronous XMPP Library for PHP",
   "keywords": ["xmpp", "async", "react", "jabber", "im"],
   "require": {
+    "php": ">=7.0",
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
     "evenement/evenement": "2.0.*",
     "psr/log": "1.0.*"
   },
   "require-dev": {
-    "kadet/keylighter": "dev-master",
+    "kadet/keylighter": "^0.8",
     "bramus/monolog-colored-line-formatter": "~2.0",
     "monolog/monolog": "^1.20",
     "phpunit/phpunit": "^5.4"
@@ -30,6 +31,5 @@
       "Utils/Filter.php",
       "Utils/Helper.php"
     ]
-  },
-  "minimum-stability": "dev"
+  }
 }
