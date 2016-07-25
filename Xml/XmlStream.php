@@ -24,6 +24,7 @@ use Kadet\Xmpp\Utils\filter as with;
  * @event element
  * @event stream.error
  * @event stream.open
+ * @event stream.close
  * @event send.element
  * @event send.text
  *
