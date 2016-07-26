@@ -47,4 +47,10 @@ class XmlElementFactory
 
         $this->lookup[$namespace] = $class;
     }
+
+    public function create($namespace, $tag, $arguments = [])
+    {
+        $class = $this->lookup($namespace, $tag);
+        return new $class(...$arguments);
+    }
 }

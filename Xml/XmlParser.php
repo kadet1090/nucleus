@@ -141,10 +141,9 @@ class XmlParser implements BetterEmitterInterface
         list($tag, $prefix)            = $this->_name($name);
 
         $uri   = $this->_lookup($prefix, $namespaces);
-        $class = $this->factory->lookup($uri, $tag);
 
         /** @var XmlElement $element */
-        $element = $this->document->importNode(new $class($name, null, $uri), true);
+        $element = $this->document->importNode($this->factory->create($uri, $tag, [ $name, null, $uri ]), true);
         foreach ($attributes as $name => $value) {
             $element->setAttribute($name, $value);
         }
