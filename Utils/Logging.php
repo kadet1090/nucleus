@@ -33,7 +33,7 @@ trait Logging
     /**
      * @return LoggerInterface
      */
-    public function getLogger()
+    public function getLogger() : LoggerInterface
     {
         if ($this->logger === null) {
             $this->logger = self::getGlobalLogger();

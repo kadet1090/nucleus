@@ -13,10 +13,13 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Exception;
+namespace Kadet\Xmpp\Utils;
 
 
-class ProtocolException extends \RuntimeException
+use Psr\Log\LoggerInterface;
+
+interface LoggingInterface
 {
-
+    public function getLogger() : LoggerInterface;
+    public function setLogger(LoggerInterface $logger);
 }
