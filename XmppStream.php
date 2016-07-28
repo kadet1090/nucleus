@@ -69,7 +69,7 @@ class XmppStream extends XmlStream
     private function handleFeatures(Features $element)
     {
         if ($element->startTls >= Features::TLS_AVAILABLE) {
-            if ($this->readable instanceof SecureStream && $this->writable instanceof SecureStream) {
+            if ($this->decorated instanceof SecureStream) {
                 $this->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
 
                 return; // Stop processing
@@ -86,9 +86,7 @@ class XmppStream extends XmlStream
         if ($response->localName === 'proceed') {
             // this function is called only by event, which can be only fired after instanceof check
             /** @noinspection PhpUndefinedMethodInspection */
-            $this->readable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
-            /** @noinspection PhpUndefinedMethodInspection */
-            $this->writable->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $this->decorated->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
             $this->restart();
         } else {
             throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened

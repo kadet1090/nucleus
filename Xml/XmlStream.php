@@ -12,7 +12,7 @@ use Kadet\Xmpp\Exception\ReadOnlyException;
 use Kadet\Xmpp\Stream\Error;
 use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\Logging;
-use React\Stream\CompositeStream;
+use Kadet\Xmpp\Utils\StreamDecorator;
 use React\Stream\DuplexStreamInterface;
 use Kadet\Xmpp\Utils\filter as with;
 
@@ -34,7 +34,7 @@ use Kadet\Xmpp\Utils\filter as with;
  * @property-read $version
  * @property-read $lang
  */
-class XmlStream extends CompositeStream // implements BetterEmitterInterface // Some php cancer
+class XmlStream extends StreamDecorator // implements BetterEmitterInterface // Some php cancer
 {
     use BetterEmitter, Logging;
 
@@ -72,7 +72,7 @@ class XmlStream extends CompositeStream // implements BetterEmitterInterface // 
      */
     public function __construct(XmlParser $parser, DuplexStreamInterface $transport)
     {
-        parent::__construct($transport, $transport);
+        parent::__construct($transport);
 
         $this->parser = $parser;
 
