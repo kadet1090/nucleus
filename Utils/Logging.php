@@ -23,7 +23,7 @@ trait Logging
     private static $global = null;
 
     /** @var LoggerInterface */
-    private $logger = null;
+    private $_logger = null;
 
     public static function setGlobalLogger(LoggerInterface $logger)
     {
@@ -35,16 +35,16 @@ trait Logging
      */
     public function getLogger() : LoggerInterface
     {
-        if ($this->logger === null) {
-            $this->logger = self::getGlobalLogger();
+        if ($this->_logger === null) {
+            $this->_logger = self::getGlobalLogger();
         }
 
-        return $this->logger;
+        return $this->_logger;
     }
 
     public function setLogger(LoggerInterface $logger)
     {
-        $this->logger = $logger;
+        $this->_logger = $logger;
     }
 
     /**

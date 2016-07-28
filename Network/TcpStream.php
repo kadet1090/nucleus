@@ -19,11 +19,11 @@ use React\Stream\Stream;
 
 class TcpStream extends Stream implements SecureStream
 {
-    private $secured = false;
+    private $_secured = false;
 
     public function encrypt(int $type = STREAM_CRYPTO_METHOD_ANY_CLIENT) : bool
     {
-        if ($this->secured) {
+        if ($this->_secured) {
             return true;
         }
 
@@ -32,12 +32,12 @@ class TcpStream extends Stream implements SecureStream
         $result &= stream_socket_enable_crypto($this->stream, true, $type);
         $result &= stream_set_blocking($this->stream, 0);
 
-        return $this->secured = $result;
+        return $this->_secured = $result;
     }
 
     public function decrypt() : bool
     {
-        if (!$this->secured) {
+        if (!$this->_secured) {
             return true;
         }
 
@@ -46,6 +46,6 @@ class TcpStream extends Stream implements SecureStream
         $result &= stream_socket_enable_crypto($this->stream, false);
         $result &= stream_set_blocking($this->stream, 0);
 
-        return !($this->secured = !$result);
+        return !($this->_secured = !$result);
     }
 }

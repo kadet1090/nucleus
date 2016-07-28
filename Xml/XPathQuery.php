@@ -18,34 +18,34 @@ namespace Kadet\Xmpp\Xml;
 
 class XPathQuery
 {
-    private $query;
+    private $_query;
     /** @var \DOMXPath */
-    private $xpath;
-    private $context;
+    private $_xpath;
+    private $_context;
 
     public function with(string $prefix, string $namespace)
     {
-        $this->xpath->registerNamespace($prefix, $namespace);
+        $this->_xpath->registerNamespace($prefix, $namespace);
 
         return $this;
     }
 
     public function query(string $query = null)
     {
-        return $this->xpath->query($query ?: $this->query, $this->context);
+        return $this->_xpath->query($query ?: $this->_query, $this->_context);
     }
 
     public function evaluate(string $query = null)
     {
-        return $this->xpath->evaluate($query ?: $this->query, $this->context);
+        return $this->_xpath->evaluate($query ?: $this->_query, $this->_context);
     }
 
     public function __construct(\DOMDocument $document, string $query, \DOMNode $context)
     {
-        $this->xpath   = new \DOMXPath($document);
+        $this->_xpath   = new \DOMXPath($document);
         $this->with('php', 'http://php.net/xpath');
 
-        $this->query   = $query;
-        $this->context = $context;
+        $this->_query   = $query;
+        $this->_context = $context;
     }
 }

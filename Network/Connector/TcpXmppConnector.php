@@ -18,6 +18,7 @@ namespace Kadet\Xmpp\Network\Connector;
 
 use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Network\TcpStream;
+use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\DnsResolver;
 use Kadet\Xmpp\Utils\Logging;
 use React\EventLoop\LoopInterface;
@@ -25,7 +26,7 @@ use React\Stream\DuplexStreamInterface;
 
 class TcpXmppConnector implements Connector
 {
-    use Logging;
+    use Logging, BetterEmitter;
 
     private $_host;
     /** @var DnsResolver */
@@ -41,7 +42,9 @@ class TcpXmppConnector implements Connector
             ]);
 
             if($stream = @stream_socket_client("tcp://$ip:$port")) {
-                return new TcpStream($stream, $this->_loop);
+                $stream = new TcpStream($stream, $this->_loop);
+                $this->emit('connect', [ $stream ]);
+                return $stream;
             }
         }
 

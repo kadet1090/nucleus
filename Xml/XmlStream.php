@@ -46,21 +46,21 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      *
      * @var XmlParser
      */
-    protected $parser;
+    protected $_parser;
 
     /**
      * @var bool
      *
      * @see XmlStream::isOpened
      */
-    private $isOpened = false;
+    private $_isOpened = false;
 
     /**
      * Stream root element
      *
      * @var XmlElement
      */
-    private $stream;
+    private $_stream;
 
     /**
      * XmlStream constructor.
@@ -70,31 +70,31 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      * @param XmlParser             $parser    XmlParser instance used for converting XML to objects
      * @param DuplexStreamInterface $transport Stream used as the transport
      */
-    public function __construct(XmlParser $parser, DuplexStreamInterface $transport)
+    public function __construct(XmlParser $parser, DuplexStreamInterface $transport = null)
     {
         parent::__construct($transport);
 
-        $this->parser = $parser;
+        $this->_parser = $parser;
 
         $this->on('element', function (Error $element) {
             $this->handleError($element);
         }, with\ofType(Error::class));
 
-        $this->parser->on('parse.begin', function (XmlElement $stream) {
-            $this->stream = $stream;
+        $this->_parser->on('parse.begin', function (XmlElement $stream) {
+            $this->_stream = $stream;
             $this->emit('stream.open', [ $stream ]);
         }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
 
-        $this->parser->on('parse.end', function (XmlElement $stream) {
+        $this->_parser->on('parse.end', function (XmlElement $stream) {
             $this->emit('stream.close', [ $stream ]);
-            $this->stream = null;
+            $this->_stream = null;
         }, with\all(with\tag('stream'), with\xmlns(self::NAMESPACE_URI)));
 
-        $this->on('data', [$this->parser, 'parse']);
-        $this->parser->on('element', function (...$arguments) {
+        $this->on('data', [$this->_parser, 'parse']);
+        $this->_parser->on('element', function (...$arguments) {
             $this->emit('element', $arguments);
         });
-        $this->on('close', function () { $this->isOpened = false; });
+        $this->on('close', function () { $this->_isOpened = false; });
     }
 
     /**
@@ -118,7 +118,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      */
     public function start(array $attributes = [])
     {
-        $this->parser->reset();
+        $this->_parser->reset();
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
 
@@ -128,7 +128,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         }
 
         $this->write(preg_replace('~/>$~', '>', $stream));
-        $this->isOpened = true;
+        $this->_isOpened = true;
     }
 
     /**
@@ -138,7 +138,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
     {
         if($this->isOpened()) {
             $this->write('</stream:stream>');
-            $this->isOpened = false;
+            $this->_isOpened = false;
         }
 
         parent::close();
@@ -151,12 +151,12 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      */
     public function isOpened()
     {
-        return $this->isOpened;
+        return $this->_isOpened;
     }
 
     public function __get($name)
     {
-        return $this->stream->getAttribute($name === 'lang' ? 'xml:lang' : $name);
+        return $this->_stream->getAttribute($name === 'lang' ? 'xml:lang' : $name);
     }
 
     public function __set($name, $value)
@@ -166,7 +166,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
     public function __isset($name)
     {
-        return $this->stream->hasAttribute($name);
+        return $this->_stream->hasAttribute($name);
     }
 
     private function handleError(Error $element)

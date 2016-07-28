@@ -40,21 +40,21 @@ class XmlParser implements BetterEmitterInterface
      *
      * @var XmlElement[]
      */
-    private $stack = [];
+    private $_stack = [];
 
     /**
      * XML parser resource
      *
      * @var resource
      */
-    private $parser;
+    private $_parser;
 
     /**
      * Document used as host for elements
      *
      * @var XmlDocument
      */
-    private $document;
+    private $_document;
 
     /**
      * XmlParser constructor.
@@ -73,30 +73,30 @@ class XmlParser implements BetterEmitterInterface
      */
     public function reset()
     {
-        $this->parser = xml_parser_create();
+        $this->_parser = xml_parser_create();
 
-        xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, 1);
-        xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, 0);
+        xml_parser_set_option($this->_parser, XML_OPTION_SKIP_WHITE, 1);
+        xml_parser_set_option($this->_parser, XML_OPTION_CASE_FOLDING, 0);
 
-        xml_set_element_handler($this->parser, function ($parser, $name, $attrs) {
+        xml_set_element_handler($this->_parser, function ($parser, $name, $attrs) {
             $this->handleElementStart($name, $attrs);
         }, function ($parser, $name) {
             $this->handleElementEnd();
         });
 
-        xml_set_character_data_handler($this->parser, function ($parser, $data) {
+        xml_set_character_data_handler($this->_parser, function ($parser, $data) {
             $this->handleTextData($data);
         });
 
-        $this->document               = new XmlDocument();
-        $this->document->formatOutput = true;
+        $this->_document               = new XmlDocument();
+        $this->_document->formatOutput = true;
 
-        $this->stack = [];
+        $this->_stack = [];
     }
 
     public function parse($data)
     {
-        xml_parse($this->parser, $data);
+        xml_parse($this->_parser, $data);
     }
 
     private function _attributes($attrs)
@@ -132,7 +132,7 @@ class XmlParser implements BetterEmitterInterface
             return 'http://www.w3.org/2000/xmlns/';
         }
 
-        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->stack)->lookupNamespaceUri($prefix);
+        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->_stack)->lookupNamespaceUri($prefix);
     }
 
     private function _element($name, $attrs)
@@ -143,7 +143,7 @@ class XmlParser implements BetterEmitterInterface
         $uri   = $this->_lookup($prefix, $namespaces);
 
         /** @var XmlElement $element */
-        $element = $this->document->importNode($this->factory->create($uri, $tag, [ $name, null, $uri ]), true);
+        $element = $this->_document->importNode($this->factory->create($uri, $tag, [ $name, null, $uri ]), true);
         foreach ($attributes as $name => $value) {
             $element->setAttribute($name, $value);
         }
@@ -155,22 +155,22 @@ class XmlParser implements BetterEmitterInterface
     {
         $element = $this->_element($name, $attrs);
 
-        if (count($this->stack) > 1) {
-            end($this->stack)->appendChild($element);
+        if (count($this->_stack) > 1) {
+            end($this->_stack)->appendChild($element);
         }
         $this->emit('parse.begin', [ $element ]);
 
-        $this->stack[] = $element;
+        $this->_stack[] = $element;
     }
 
     private function handleElementEnd()
     {
-        if (empty($this->stack) === null) {
+        if (empty($this->_stack) === null) {
             return;
         }
 
-        $element = array_pop($this->stack);
-        if (count($this->stack) == 1) {
+        $element = array_pop($this->_stack);
+        if (count($this->_stack) == 1) {
             $this->emit('element', [ $element ]);
         }
 
@@ -180,7 +180,7 @@ class XmlParser implements BetterEmitterInterface
     private function handleTextData($data)
     {
         if (trim($data)) {
-            end($this->stack)->appendChild(new \DOMText($data));
+            end($this->_stack)->appendChild(new \DOMText($data));
         }
     }
 }

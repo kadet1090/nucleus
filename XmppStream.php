@@ -32,12 +32,12 @@ class XmppStream extends XmlStream
     private $_attributes = [];
     private $_lang;
 
-    public function __construct(XmlParser $parser, DuplexStreamInterface $transport, string $lang = 'en')
+    public function __construct(XmlParser $parser, DuplexStreamInterface $transport = null, string $lang = 'en')
     {
         parent::__construct($parser, $transport);
 
-        $this->parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
-        $this->parser->factory->register(Error::class,    self::NAMESPACE_URI, 'error');
+        $this->_parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
+        $this->_parser->factory->register(Error::class,    self::NAMESPACE_URI, 'error');
 
         $this->_lang = $lang;
 
@@ -69,7 +69,7 @@ class XmppStream extends XmlStream
     private function handleFeatures(Features $element)
     {
         if ($element->startTls >= Features::TLS_AVAILABLE) {
-            if ($this->decorated instanceof SecureStream) {
+            if ($this->_decorated instanceof SecureStream) {
                 $this->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
 
                 return; // Stop processing
@@ -86,7 +86,7 @@ class XmppStream extends XmlStream
         if ($response->localName === 'proceed') {
             // this function is called only by event, which can be only fired after instanceof check
             /** @noinspection PhpUndefinedMethodInspection */
-            $this->decorated->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $this->_decorated->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
             $this->restart();
         } else {
             throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened

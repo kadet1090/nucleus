@@ -23,95 +23,97 @@ abstract class StreamDecorator implements DuplexStreamInterface
 {
     use BetterEmitter;
 
-    private $_listeners;
+    private $_redirectors;
 
     /**
      * @var DuplexStreamInterface
      */
-    protected $decorated = null;
+    protected $_decorated = null;
 
     /**
      * StreamDecorator constructor.
      * @param DuplexStreamInterface $decorated
      */
-    public function __construct(DuplexStreamInterface $decorated)
+    public function __construct(DuplexStreamInterface $decorated = null)
     {
-        $this->exchangeStream($decorated);
+        if($decorated !== null) {
+            $this->exchangeStream($decorated);
+        }
     }
 
     public function isReadable()
     {
-        return $this->decorated->isReadable();
+        return $this->_decorated->isReadable();
     }
 
     public function pause()
     {
-        $this->decorated->pause();
+        $this->_decorated->pause();
     }
 
     public function resume()
     {
-        $this->decorated->resume();
+        $this->_decorated->resume();
     }
 
     public function pipe(WritableStreamInterface $destination, array $options = array())
     {
-        $this->decorated->pipe($destination, $options);
+        $this->_decorated->pipe($destination, $options);
     }
 
     public function close()
     {
-        $this->decorated->close();
+        $this->_decorated->close();
     }
 
     public function isWritable()
     {
-        return $this->decorated->isWritable();
+        return $this->_decorated->isWritable();
     }
 
     public function write($data)
     {
-        return $this->decorated->write($data);
+        return $this->_decorated->write($data);
     }
 
     public function end($data = null)
     {
-        return $this->decorated->end($data);
+        return $this->_decorated->end($data);
     }
 
     public function exchangeStream(DuplexStreamInterface $stream)
     {
         static $events = ['data', 'end', 'drain', 'error', 'close', 'pipe'];
 
-        if($this->decorated !== null) {
-            $this->unsubscribe($this->decorated, $events);
+        if($this->_decorated !== null) {
+            $this->unsubscribe($this->_decorated, $events);
         }
 
         $this->subscribe($stream, $events);
-        $this->decorated = $stream;
+        $this->_decorated = $stream;
     }
 
     private function unsubscribe(DuplexStreamInterface $stream, array $events)
     {
         foreach ($events as $event) {
-            if(!isset($this->_listeners[$event])) {
+            if(!isset($this->_redirectors[$event])) {
                 continue;
             }
 
-            $stream->removeListener($event, $this->_listeners[$event]);
+            $stream->removeListener($event, $this->_redirectors[$event]);
         }
     }
 
     private function subscribe(DuplexStreamInterface $stream, array $events)
     {
         foreach ($events as $event) {
-            if(!isset($this->_listeners[$event])) {
-                $this->_listeners[$event] = function (...$arguments) use ($event) {
+            if(!isset($this->_redirectors[$event])) {
+                $this->_redirectors[$event] = function (...$arguments) use ($event) {
                     $this->emit($event, $arguments);
                 };
             }
 
-            $stream->on($event, $this->_listeners[$event]);
+            $stream->on($event, $this->_redirectors[$event]);
         }
     }
 

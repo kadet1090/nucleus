@@ -20,14 +20,14 @@ class XmlElementFactory
     /**
      * @var string[string]
      */
-    private $lookup = [];
+    private $_lookup = [];
     
     public function lookup($namespace, $tag)
     {
-        if (isset($this->lookup["$tag@$namespace"])) {
-            return $this->lookup["$tag@$namespace"];
-        } elseif (isset($this->lookup[$namespace])) {
-            return $this->lookup[$namespace];
+        if (isset($this->_lookup["$tag@$namespace"])) {
+            return $this->_lookup["$tag@$namespace"];
+        } elseif (isset($this->_lookup[$namespace])) {
+            return $this->_lookup[$namespace];
         } else {
             return XmlElement::class;
         }
@@ -36,7 +36,7 @@ class XmlElementFactory
     public function register($class, $namespace, $tag = null)
     {
         if (is_array($namespace)) {
-            $this->lookup = array_merge($this->lookup, $namespace);
+            $this->_lookup = array_merge($this->_lookup, $namespace);
 
             return;
         }
@@ -45,7 +45,7 @@ class XmlElementFactory
             $namespace = "$tag@$namespace";
         }
 
-        $this->lookup[$namespace] = $class;
+        $this->_lookup[$namespace] = $class;
     }
 
     public function create($namespace, $tag, $arguments = [])
