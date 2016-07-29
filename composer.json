@@ -8,10 +8,10 @@
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
     "evenement/evenement": "2.0.*",
-    "psr/log": "1.0.*"
+    "psr/log": "1.0.*",
+    "kadet/keylighter": "^0.8"
   },
   "require-dev": {
-    "kadet/keylighter": "^0.8",
     "bramus/monolog-colored-line-formatter": "~2.0",
     "monolog/monolog": "^1.20",
     "phpunit/phpunit": "^5.4"

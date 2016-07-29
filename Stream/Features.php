@@ -17,6 +17,7 @@ namespace Kadet\Xmpp\Stream;
 
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\XmppClient;
 use Kadet\Xmpp\XmppStream;
 
 /**
@@ -44,5 +45,10 @@ class Features extends XmlElement
         }
 
         return self::TLS_AVAILABLE;
+    }
+
+    public function getMechanisms()
+    {
+        return iterator_to_array($this->query(".//sasl:mechanism")->with('sasl', XmppClient::SASL_NAMESPACE)->query());
     }
 }

@@ -18,6 +18,7 @@ namespace Kadet\Xmpp;
 
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Network\Connector;
+use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
 use React\EventLoop\LoopInterface;
@@ -30,6 +31,8 @@ use React\EventLoop\LoopInterface;
  */
 class XmppClient extends XmppStream
 {
+    const SASL_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-sasl';
+
     /**
      * Connector used to instantiate stream connection to server.
      *
@@ -72,6 +75,10 @@ class XmppClient extends XmppStream
 
         $this->setConnector($connector);
         $this->connect();
+
+        $this->_connector->on('connect', function(...$arguments) {
+            return $this->emit('connect', $arguments);
+        });
     }
 
     public function connect()
@@ -96,6 +103,18 @@ class XmppClient extends XmppStream
             'to'   => $this->_jid->domain
         ]);
     }
+
+    protected function handleFeatures(Features $element)
+    {
+        if(!parent::handleFeatures($element)) {
+            return false;
+        }
+
+        \Kadet\Xmpp\Utils\helper\dd($element->getMechanisms());
+
+        return true;
+    }
+
 
     /**
      * @param $connector

@@ -14,6 +14,7 @@
  */
 
 namespace Kadet\Xmpp\Utils\helper;
+use Kadet\Xmpp\Utils\Dumper;
 
 /**
  * Returns exception friendly type of value.
@@ -43,4 +44,9 @@ function partial(callable $callable, $argument, int $position = 0) : callable
 
         return $callable(...$arguments);
     };
+}
+
+function dd($value)
+{
+    echo Dumper::get()->dump($value).PHP_EOL.PHP_EOL;
 }
