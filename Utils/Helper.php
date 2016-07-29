@@ -50,3 +50,8 @@ function dd($value)
 {
     echo Dumper::get()->dump($value).PHP_EOL.PHP_EOL;
 }
+
+function format($string, array $arguments = [])
+{
+    return str_replace(array_map(function($e) { return "{{$e}}"; }, array_keys($arguments)), $arguments, $string);
+}

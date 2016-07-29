@@ -55,10 +55,10 @@ class Dumper
 
     private function _dumpDefault($value)
     {
-        return sprintf('%s %s',
-            Console::get()->styled(['color' => 'red'], \Kadet\Xmpp\Utils\helper\typeof($value)),
-            var_export($value, true)
-        );
+        return helper\format('{type} {value}', [
+            'type'  => Console::get()->styled(['color' => 'red'], \Kadet\Xmpp\Utils\helper\typeof($value)),
+            'value' => var_export($value, true)
+        ]);
     }
 
     private function _dumpObject($value)
