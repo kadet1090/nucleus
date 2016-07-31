@@ -73,7 +73,7 @@ class XmlParser implements BetterEmitterInterface
 
         xml_set_element_handler($this->_parser, function ($parser, $name, $attrs) {
             $this->handleElementStart($name, $attrs);
-        }, function ($parser, $name) {
+        }, function () {
             $this->handleElementEnd();
         });
 

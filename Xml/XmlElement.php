@@ -56,7 +56,7 @@ class XmlElement
 
     /** @var string */
     private $_localName;
-    /** @var null|string */
+    /** @var null|string|false */
     private $_prefix = null;
 
     /** @var array */
@@ -224,11 +224,7 @@ class XmlElement
             return;
         }
 
-        if ($uri !== null) {
-            $attribute = $this->_prefix($attribute, $uri);
-        }
-
-        $this->_attributes[$attribute] = $value;
+        $this->_attributes[$this->_prefix($attribute, $uri)] = $value;
     }
 
     /**
@@ -236,8 +232,8 @@ class XmlElement
      *
      * For `http://www.w3.org/2000/xmlns/` URI it acts like `lookupUri($attribute)`
      *
-     * @param string      $attribute
-     * @param string|null $uri
+     * @param string      $attribute Attribute name, optionally with prefix
+     * @param string|null $uri       XML Namespace URI of attribute, prefix will be automatically looked up
      * @return bool|mixed
      */
     public function getAttribute(string $attribute, string $uri = null)
@@ -246,11 +242,20 @@ class XmlElement
             return $this->lookupUri($attribute);
         }
 
-        if ($uri !== null) {
-            $attribute = $this->_prefix($attribute, $uri);
-        }
+        return $this->_attributes[$this->_prefix($attribute, $uri)] ?? false;
+    }
 
-        return $this->_attributes[$attribute] ?? false;
+    /**
+     * Checks if attribute exists
+     *
+     * @param string      $attribute Attribute name, optionally with prefix
+     * @param string|null $uri       XML Namespace URI of attribute, prefix will be automatically looked up
+     *
+     * @return bool
+     */
+    public function hasAttribute(string $attribute, string $uri = null)
+    {
+        return isset($this->_attributes[$this->_prefix($attribute, $uri)]);
     }
 
     /**
@@ -370,8 +375,8 @@ class XmlElement
     /**
      * Retrieves array of matching elements
      *
-     * @param string $name Requested element tag name
-     * @param null   $uri  Requested element namespace
+     * @param string      $name Requested element tag name
+     * @param string|null $uri  Requested element namespace
      *
      * @return XmlElement[] Found Elements
      */
@@ -432,8 +437,12 @@ class XmlElement
      *
      * @return string
      */
-    protected function _prefix(string $name, string $uri): string
+    protected function _prefix(string $name, string $uri = null): string
     {
+        if($uri === null) {
+            return $name;
+        }
+
         if (($prefix = $this->lookupPrefix($uri)) === false) {
             throw new InvalidArgumentException(helper\format('URI "{uri}" is not a registered namespace', ['uri' => $uri]));
         }
