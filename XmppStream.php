@@ -70,7 +70,7 @@ class XmppStream extends XmlStream
     {
         if ($element->startTls >= Features::TLS_AVAILABLE) {
             if ($this->_decorated instanceof SecureStream) {
-                $this->write(XmlElement::create('starttls', null, self::TLS_NAMESPACE));
+                $this->write(XmlElement::plain('starttls', self::TLS_NAMESPACE));
 
                 return true; // Stop processing
             } elseif ($element->startTls === Features::TLS_REQUIRED) {

@@ -122,12 +122,12 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
 
-        $stream = XmlElement::create('stream:stream', null, 'http://etherx.jabber.org/streams');
+        $stream = XmlElement::plain('stream:stream', 'http://etherx.jabber.org/streams');
         foreach ($attributes as $key => $value) {
             $stream->setAttribute($key, $value);
         }
 
-        $this->write(preg_replace('~/>$~', '>', $stream));
+        $this->write(preg_replace('~\s+/>$~', '>', $stream));
         $this->_isOpened = true;
     }
 

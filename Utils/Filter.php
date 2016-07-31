@@ -15,12 +15,14 @@
 
 namespace Kadet\Xmpp\Utils\filter;
 
+use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Utils\helper;
 
 function xmlns($uri)
 {
     return function (XmlElement $element) use ($uri) {
-        return $element->namespaceURI === $uri;
+        return $element->namespace === $uri;
     };
 }
 
@@ -62,4 +64,15 @@ function any(callable ...$functions)
 
         return false;
     };
+}
+
+function predicate($predicate) : callable
+{
+    if (is_callable($predicate)) {
+        return $predicate;
+    } elseif (class_exists($predicate)) {
+        return ofType($predicate);
+    } else {
+        throw new InvalidArgumentException('$condition must be either class-name or callable, ' . helper\typeof($predicate) . ' given.');
+    }
 }

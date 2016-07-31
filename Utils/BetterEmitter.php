@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\filter as with;
 use Evenement\EventEmitterTrait;
 
@@ -79,7 +78,7 @@ trait BetterEmitter
             return $listener;
         }
 
-        $condition = $this->emitterResolveCondition($condition);
+        $condition = with\predicate($condition);
         return function (...$arguments) use ($listener, $condition) {
             if ($condition(...$arguments)) {
                 $listener(...$arguments);
@@ -94,16 +93,5 @@ trait BetterEmitter
 
             $listener(...$arguments);
         };
-    }
-
-    protected function emitterResolveCondition($condition) : callable
-    {
-        if (is_callable($condition)) {
-            return $condition;
-        } elseif (class_exists($condition)) {
-            return with\ofType($condition);
-        } else {
-            throw new InvalidArgumentException('$condition must be either class-name or callable, ' . helper\typeof($condition) . ' given.');
-        }
     }
 }

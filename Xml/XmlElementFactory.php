@@ -51,6 +51,7 @@ class XmlElementFactory
     public function create($namespace, $tag, $arguments = [])
     {
         $class = $this->lookup($namespace, $tag);
-        return new $class(...$arguments);
+        /** @noinspection PhpUndefinedMethodInspection */
+        return $class::plain(...$arguments);
     }
 }

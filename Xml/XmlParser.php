@@ -50,13 +50,6 @@ class XmlParser implements BetterEmitterInterface
     private $_parser;
 
     /**
-     * Document used as host for elements
-     *
-     * @var XmlDocument
-     */
-    private $_document;
-
-    /**
      * XmlParser constructor.
      *
      * @param XmlElementFactory $factory Factory used for XML element creation
@@ -88,9 +81,6 @@ class XmlParser implements BetterEmitterInterface
             $this->handleTextData($data);
         });
 
-        $this->_document               = new XmlDocument();
-        $this->_document->formatOutput = true;
-
         $this->_stack = [];
     }
 
@@ -115,35 +105,24 @@ class XmlParser implements BetterEmitterInterface
         return [$attributes, $namespaces];
     }
 
-    private function _name($name)
-    {
-        $namespace = null;
-        if (($pos = strpos($name, ':')) !== false) {
-            $namespace = substr($name, 0, $pos);
-            $name      = substr($name, $pos + 1);
-        }
-
-        return [$name, $namespace];
-    }
-
     private function _lookup($prefix, $namespaces)
     {
         if ($prefix === 'xmlns') {
             return 'http://www.w3.org/2000/xmlns/';
         }
 
-        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->_stack)->lookupNamespaceUri($prefix);
+        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->_stack)->lookupUri($prefix);
     }
 
     private function _element($name, $attrs)
     {
         list($attributes, $namespaces) = $this->_attributes($attrs);
-        list($tag, $prefix)            = $this->_name($name);
+        list($tag, $prefix)            = XmlElement::resolve($name);
 
         $uri   = $this->_lookup($prefix, $namespaces);
 
         /** @var XmlElement $element */
-        $element = $this->_document->importNode($this->factory->create($uri, $tag, [ $name, null, $uri ]), true);
+        $element = $this->factory->create($uri, $tag, [ $name, $uri ]);
         foreach ($attributes as $name => $value) {
             $element->setAttribute($name, $value);
         }
@@ -156,7 +135,7 @@ class XmlParser implements BetterEmitterInterface
         $element = $this->_element($name, $attrs);
 
         if (count($this->_stack) > 1) {
-            end($this->_stack)->appendChild($element);
+            end($this->_stack)->append($element);
         }
         $this->emit('parse.begin', [ $element ]);
 
@@ -180,7 +159,7 @@ class XmlParser implements BetterEmitterInterface
     private function handleTextData($data)
     {
         if (trim($data)) {
-            end($this->_stack)->appendChild(new \DOMText($data));
+            end($this->_stack)->append($data);
         }
     }
 }
