@@ -29,8 +29,11 @@ use \Kadet\Xmpp\Utils\filter;
  * @property string $namespace
  * @property string $prefix
  * @property string $name
+ * @property string $innerXml
  * @property XmlElement $parent
  * @property XmlElement[] $children
+ * @property array $attributes
+ * @property array $namespaces
  */
 class XmlElement
 {
@@ -61,6 +64,23 @@ class XmlElement
      */
     private $_children = [];
 
+    /**
+     * XmlElement constructor.
+     * @param string $name
+     * @param string $uri
+     */
+    public function __construct(string $name, string $uri = null)
+    {
+        list($name, $prefix) = self::resolve($name);
+
+        $this->_localName = $name;
+        $this->_prefix    = $prefix;
+
+        if ($uri !== null) {
+            $this->namespace = $uri;
+        }
+    }
+
     public function __toString()
     {
         return trim($this->xml(true));
@@ -80,15 +100,7 @@ class XmlElement
         }, array_keys($attributes), array_values($attributes)));
 
         if(!empty($this->_children)) {
-            $result .= ">".implode('', array_map(function($element) {
-                if(is_string($element)) {
-                    return htmlspecialchars($element);
-                } elseif ($element instanceof XmlElement) {
-                    return $element->xml(false);
-                }
-
-                return (string)$element;
-            }, $this->_children))."</{$this->name}>";
+            $result .= ">{$this->innerXml}</{$this->name}>";
         } else {
             $result .= "/>";
         }
@@ -96,10 +108,23 @@ class XmlElement
         return $clean && function_exists('tidy_repair_string') ? tidy_repair_string($result, self::$tidy) : $result;
     }
 
+    public function getInnerXml()
+    {
+        return implode('', array_map(function($element) {
+            if(is_string($element)) {
+                return htmlspecialchars($element);
+            } elseif ($element instanceof XmlElement) {
+                return $element->xml(false);
+            }
+
+            return (string)$element;
+        }, $this->_children));
+    }
+
     public function setAttribute(string $attribute, $value, string $uri = null)
     {
         if($uri === 'http://www.w3.org/2000/xmlns/') {
-            $this->_namespaces[(string)$value] = $attribute;
+            $this->setNamespace($value, $attribute);
             return;
         }
 
@@ -119,6 +144,11 @@ class XmlElement
         return $this->_attributes[$attribute] ?? false;
     }
 
+    public function getParent()
+    {
+        return $this->_parent;
+    }
+
     /**
      * @return array
      */
@@ -135,7 +165,7 @@ class XmlElement
         }
     }
 
-    public function attributes(): array
+    private function attributes(): array
     {
         $namespaces = $this->getNamespaces(false);
         $namespaces = array_map(function($prefix, $uri) {
@@ -158,6 +188,10 @@ class XmlElement
         return $this->getNamespaces()[$uri] ?? false;
     }
 
+    /**
+     * @param string       $uri
+     * @param string|false $prefix
+     */
     public function setNamespace(string $uri, $prefix = false)
     {
         if($prefix === false) {
@@ -190,7 +224,7 @@ class XmlElement
             $element->parent  = $this;
         }
 
-        $this->_children[] = $element;
+        return $this->_children[] = $element;
     }
 
     public function getName()
@@ -210,9 +244,18 @@ class XmlElement
 
     protected function setParent(XmlElement $parent)
     {
+        if(!$this->_prefix && ($prefix = $parent->lookupPrefix($this->namespace)) !== false) {
+            $this->_namespaces[$this->namespace] = $prefix;
+            $this->_prefix = $prefix;
+        }
+
         $this->_parent = $parent;
         if($this->namespace === false) {
             $this->namespace = $parent->namespace;
+        }
+
+        if(!$this->_prefix) {
+            $this->_prefix = $this->lookupPrefix($this->namespace);
         }
     }
 
@@ -234,6 +277,11 @@ class XmlElement
         return $this->all($predicate);
     }
 
+    public function getAttributes()
+    {
+        return $this->_attributes;
+    }
+
     /**
      * Returns one element at specified index (for default the first one).
      *
@@ -245,7 +293,7 @@ class XmlElement
      */
     public function element(string $name, string $uri = null, int $index = 0)
     {
-        return $this->elements($name, $uri)[$index] ?? false;
+        return array_values($this->elements($name, $uri))[$index] ?? false;
     }
 
     public function all($predicate) {
