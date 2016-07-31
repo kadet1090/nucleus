@@ -17,41 +17,51 @@ namespace Kadet\Xmpp\Xml;
 
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\Accessors;
-
-use \Kadet\Xmpp\Utils\helper;
-use \Kadet\Xmpp\Utils\filter;
+use Kadet\Xmpp\Utils\filter;
+use Kadet\Xmpp\Utils\helper;
 
 /**
  * Class XmlElement
  * @package Kadet\Xmpp\Xml
  *
- * @property string $localName Tag name without prefix.
- * @property string $namespace
- * @property string $prefix
- * @property string $name
- * @property string $innerXml
- * @property XmlElement $parent
- * @property XmlElement[] $children
- * @property array $attributes
- * @property array $namespaces
+ * @property string          $localName  Tag name without prefix
+ * @property string          $namespace  XML Namespace URI
+ * @property string          $prefix     Tag prefix
+ * @property string          $name       Full tag name prefix:local-name
+ *
+ * @property XmlElement|null $parent     Element's parent or null if root node.
+ * @property XmlElement[]    $children   All element's child nodes
+ *
+ * @property array           $attributes Element's attributes, without xmlns definitions
+ * @property array           $namespaces Element's namespaces
+ *
+ * @property string          $innerXml   Inner XML content
  */
 class XmlElement
 {
     use Accessors;
 
+    /**
+     * Settings for tiding up XML output
+     *
+     * @var array
+     */
     public static $tidy = [
-        'indent'           => true,
-        'input-xml'        => true,
-        'output-xml'       => true,
+        'indent' => true,
+        'input-xml' => true,
+        'output-xml' => true,
         'drop-empty-paras' => false,
-        'wrap'             => 0
+        'wrap' => 0
     ];
 
+    /** @var string */
     private $_localName;
+    /** @var null|string */
     private $_prefix = null;
 
-    private $_namespaces = [
-    ];
+    /** @var array */
+    private $_namespaces = [];
+    /** @var array */
     private $_attributes = [];
 
     /**
@@ -65,53 +75,60 @@ class XmlElement
     private $_children = [];
 
     /**
-     * XmlElement constructor.
-     * @param string $name
-     * @param string $uri
+     * Initializes element with given name and URI
+     *
+     * @param string $name Element name, including prefix if needed
+     * @param string $uri  Namespace URI of element
      */
-    public function __construct(string $name, string $uri = null)
+    protected function init(string $name, string $uri = null)
     {
         list($name, $prefix) = self::resolve($name);
 
         $this->_localName = $name;
-        $this->_prefix    = $prefix;
+        $this->_prefix = $prefix;
 
         if ($uri !== null) {
             $this->namespace = $uri;
         }
     }
 
-    public function __toString()
+    /**
+     * XmlElement constructor
+     *
+     * @param string $name Element name, including prefix if needed
+     * @param string $uri  Namespace URI of element
+     */
+    public function __construct(string $name, string $uri = null)
     {
-        return trim($this->xml(true));
+        $this->init($name, $uri);
     }
 
-    public function xml($clean = true): string
+    /**
+     * Elements named constructor, same for every subclass.
+     * It's used for factory creation.
+     *
+     * @param string $name Element name, including prefix if needed
+     * @param string $uri  Namespace URI of element
+     *
+     * @return XmlElement
+     */
+    public static function plain(string $name, string $uri = null)
     {
-        if($this->namespace && $this->_prefix === null) {
-            $this->_prefix = $this->lookupPrefix($this->namespace);
-        }
+        /** @var XmlElement $element */
+        $element = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
+        $element->init($name, $uri);
 
-        $attributes = $this->attributes();
-
-        $result = "<{$this->name}";
-        $result .= ' '.implode(' ', array_map(function($key, $value) {
-            return $key.'="'.htmlspecialchars($value, ENT_QUOTES).'"';
-        }, array_keys($attributes), array_values($attributes)));
-
-        if(!empty($this->_children)) {
-            $result .= ">{$this->innerXml}</{$this->name}>";
-        } else {
-            $result .= "/>";
-        }
-
-        return $clean && function_exists('tidy_repair_string') ? tidy_repair_string($result, self::$tidy) : $result;
+        return $element;
     }
 
+    /**
+     * @see $innerXml
+     * @return string
+     */
     public function getInnerXml()
     {
-        return implode('', array_map(function($element) {
-            if(is_string($element)) {
+        return implode('', array_map(function ($element) {
+            if (is_string($element)) {
                 return htmlspecialchars($element);
             } elseif ($element instanceof XmlElement) {
                 return $element->xml(false);
@@ -121,115 +138,204 @@ class XmlElement
         }, $this->_children));
     }
 
-    public function setAttribute(string $attribute, $value, string $uri = null)
+    /**
+     * Returns XML representation of element
+     *
+     * @param bool $clean Result will be cleaned if set to true
+     *
+     * @return string
+     */
+    public function xml(bool $clean = true): string
     {
-        if($uri === 'http://www.w3.org/2000/xmlns/') {
-            $this->setNamespace($value, $attribute);
-            return;
+        if ($this->namespace && $this->_prefix === null) {
+            $this->_prefix = $this->lookupPrefix($this->namespace);
         }
 
-        if($uri !== null) {
-            $attribute = $this->_prefix($attribute, $uri);
+        $attributes = $this->attributes();
+
+        $result = "<{$this->name}";
+        $result .= ' ' . implode(' ', array_map(function ($key, $value) {
+                return $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+            }, array_keys($attributes), array_values($attributes)));
+
+        if (!empty($this->_children)) {
+            $result .= ">{$this->innerXml}</{$this->name}>";
+        } else {
+            $result .= "/>";
         }
 
-        $this->_attributes[$attribute] = $value;
-    }
-
-    public function getAttribute(string $attribute, string $uri = null)
-    {
-        if($uri !== null) {
-            $attribute = $this->_prefix($attribute, $uri);
-        }
-
-        return $this->_attributes[$attribute] ?? false;
-    }
-
-    public function getParent()
-    {
-        return $this->_parent;
+        return $clean && function_exists('tidy_repair_string') ? tidy_repair_string($result, self::$tidy) : $result;
     }
 
     /**
-     * @return array
+     * Looks up prefix associated with given URI
+     *
+     * @param string|null $uri
+     * @return string|false
      */
-    public function getNamespaces($parent = true): array
-    {
-        if(!$this->_parent) {
-            return $this->_namespaces;
-        }
-
-        if($parent) {
-            return array_merge($this->_namespaces, $this->_parent->getNamespaces());
-        } else {
-            return array_diff_assoc($this->_namespaces, $this->_parent->getNamespaces());
-        }
-    }
-
-    private function attributes(): array
-    {
-        $namespaces = $this->getNamespaces(false);
-        $namespaces = array_map(function($prefix, $uri) {
-            return [ $prefix ? "xmlns:{$prefix}" : 'xmlns', $uri ];
-        }, array_values($namespaces), array_keys($namespaces));
-
-        return array_merge(
-            $this->_attributes,
-            array_combine(array_column($namespaces, 0), array_column($namespaces, 1))
-        );
-    }
-
-    public function lookupUri(string $prefix = null)
-    {
-        return array_search($prefix, $this->getNamespaces()) ?: false;
-    }
-
     public function lookupPrefix(string $uri = null)
     {
         return $this->getNamespaces()[$uri] ?? false;
     }
 
     /**
-     * @param string       $uri
-     * @param string|false $prefix
+     * Looks up URI associated with given prefix
+     *
+     * @param string|null $prefix
+     * @return string|false
+     */
+    public function lookupUri(string $prefix = null)
+    {
+        return array_search($prefix, $this->getNamespaces()) ?: false;
+    }
+
+    /**
+     * Returns element's namespaces
+     *
+     * @param bool $parent Include namespaces from parent?
+     * @return array
+     */
+    public function getNamespaces($parent = true): array
+    {
+        if (!$this->_parent) {
+            return $this->_namespaces;
+        }
+
+        if ($parent) {
+            return array_merge($this->_namespaces, $this->_parent->getNamespaces());
+        } else {
+            return array_diff_assoc($this->_namespaces, $this->_parent->getNamespaces());
+        }
+    }
+
+    /**
+     * Sets XML attribute of element
+     *
+     * For `http://www.w3.org/2000/xmlns/` URI it acts like `setNamespace($value, $attribute)`
+     *
+     * @param string      $attribute Attribute name, optionally with prefix
+     * @param mixed       $value     Attribute value
+     * @param string|null $uri       XML Namespace URI of attribute, prefix will be automatically looked up
+     */
+    public function setAttribute(string $attribute, $value, string $uri = null)
+    {
+        if ($uri === 'http://www.w3.org/2000/xmlns/') {
+            $this->setNamespace($value, $attribute);
+            return;
+        }
+
+        if ($uri !== null) {
+            $attribute = $this->_prefix($attribute, $uri);
+        }
+
+        $this->_attributes[$attribute] = $value;
+    }
+
+    /**
+     * Returns value of specified attribute.
+     *
+     * For `http://www.w3.org/2000/xmlns/` URI it acts like `lookupUri($attribute)`
+     *
+     * @param string      $attribute
+     * @param string|null $uri
+     * @return bool|mixed
+     */
+    public function getAttribute(string $attribute, string $uri = null)
+    {
+        if ($uri === 'http://www.w3.org/2000/xmlns/') {
+            return $this->lookupUri($attribute);
+        }
+
+        if ($uri !== null) {
+            $attribute = $this->_prefix($attribute, $uri);
+        }
+
+        return $this->_attributes[$attribute] ?? false;
+    }
+
+    /**
+     * Returns element's parent
+     * @return XmlElement|null
+     */
+    public function getParent()
+    {
+        return $this->_parent;
+    }
+
+    /**
+     * Sets element's parent
+     * @param XmlElement $parent
+     */
+    protected function setParent(XmlElement $parent)
+    {
+        if (!$this->_prefix && ($prefix = $parent->lookupPrefix($this->namespace)) !== false) {
+            $this->_namespaces[$this->namespace] = $prefix;
+            $this->_prefix = $prefix;
+        }
+
+        $this->_parent = $parent;
+        if ($this->namespace === false) {
+            $this->namespace = $parent->namespace;
+        }
+    }
+
+    /**
+     * Appends child to element
+     *
+     * @param XmlElement|string $element
+     *
+     * @return XmlElement|string Same as $element
+     */
+    public function append($element)
+    {
+        if (!is_string($element) && !$element instanceof XmlElement) {
+            throw new InvalidArgumentException(helper\format('$element should be either string or object of {class} class, {type} given', [
+                'class' => XmlElement::class,
+                'type' => helper\typeof($element)
+            ]));
+        }
+
+        if ($element instanceof XmlElement) {
+            $element->parent = $this;
+        }
+
+        return $this->_children[] = $element;
+    }
+
+    /**
+     * Returns namespace URI associated with element
+     *
+     * @return false|string
+     */
+    public function getNamespace()
+    {
+        return $this->lookupUri($this->prefix);
+    }
+
+    /**
+     * Adds namespace to element, and associates it with prefix.
+     *
+     * @param string           $uri    Namespace URI
+     * @param string|bool|null $prefix Prefix which will be used for namespace, false for using element's prefix
+     *                                 and null for no prefix
      */
     public function setNamespace(string $uri, $prefix = false)
     {
-        if($prefix === false) {
+        if ($prefix === false) {
             $prefix = $this->_prefix;
         }
 
         $this->_namespaces[$uri] = $prefix;
     }
 
-    public function getNamespace()
+    public function getName()
     {
-        return $this->lookupUri($this->prefix);
+        return ($this->_prefix ? $this->prefix . ':' : null) . $this->localName;
     }
 
     public function getChildren()
     {
         return $this->_children;
-    }
-
-    public function append($element)
-    {
-        if(!is_string($element) && !$element instanceof XmlElement) {
-            throw new InvalidArgumentException(helper\format('$element should be either string or object of {class} class, {type} given', [
-                'class' => XmlElement::class,
-                'type'  => helper\typeof($element)
-            ]));
-        }
-
-        if($element instanceof XmlElement) {
-            $element->parent  = $this;
-        }
-
-        return $this->_children[] = $element;
-    }
-
-    public function getName()
-    {
-        return ($this->_prefix ? $this->prefix.':' : null).$this->localName;
     }
 
     public function getPrefix()
@@ -240,41 +346,6 @@ class XmlElement
     public function getLocalName()
     {
         return $this->_localName;
-    }
-
-    protected function setParent(XmlElement $parent)
-    {
-        if(!$this->_prefix && ($prefix = $parent->lookupPrefix($this->namespace)) !== false) {
-            $this->_namespaces[$this->namespace] = $prefix;
-            $this->_prefix = $prefix;
-        }
-
-        $this->_parent = $parent;
-        if($this->namespace === false) {
-            $this->namespace = $parent->namespace;
-        }
-
-        if(!$this->_prefix) {
-            $this->_prefix = $this->lookupPrefix($this->namespace);
-        }
-    }
-
-    /**
-     * Retrieves array of matching elements
-     *
-     * @param string $name  Requested element tag name
-     * @param null   $uri   Requested element namespace
-     *
-     * @return XmlElement[] Found Elements
-     */
-    public function elements($name, $uri = null) : array
-    {
-        $predicate = filter\tag($name);
-        if($uri !== null) {
-            $predicate = filter\all($predicate, filter\xmlns($uri));
-        }
-
-        return $this->all($predicate);
     }
 
     public function getAttributes()
@@ -296,9 +367,34 @@ class XmlElement
         return array_values($this->elements($name, $uri))[$index] ?? false;
     }
 
-    public function all($predicate) {
-        $predicate = filter\predicate($predicate);
-        return array_filter($this->_children, $predicate);
+    /**
+     * Retrieves array of matching elements
+     *
+     * @param string $name Requested element tag name
+     * @param null   $uri  Requested element namespace
+     *
+     * @return XmlElement[] Found Elements
+     */
+    public function elements($name, $uri = null) : array
+    {
+        $predicate = filter\tag($name);
+        if ($uri !== null) {
+            $predicate = filter\all($predicate, filter\xmlns($uri));
+        }
+
+        return $this->all($predicate);
+    }
+
+    /**
+     * Filters element with given predicate
+     *
+     * @param callable|string $predicate Predicate or class name
+     *
+     * @return XmlElement[]
+     */
+    public function all($predicate)
+    {
+        return array_filter($this->_children, filter\predicate($predicate));
     }
 
     /**
@@ -310,30 +406,30 @@ class XmlElement
         return new XPathQuery($query, $this);
     }
 
-    protected function init() { }
-
-    public static function plain(string $name, string $uri = null)
+    /**
+     * Helper for retrieving all arguments (including namespaces)
+     *
+     * @return array
+     */
+    private function attributes(): array
     {
-        $reflection = new \ReflectionClass(static::class);
+        $namespaces = $this->getNamespaces(false);
+        $namespaces = array_map(function ($prefix, $uri) {
+            return [$prefix ? "xmlns:{$prefix}" : 'xmlns', $uri];
+        }, array_values($namespaces), array_keys($namespaces));
 
-        list($name, $prefix) = static::resolve($name);
-
-        /** @var XmlElement $element */
-        $element = $reflection->newInstanceWithoutConstructor();
-        $element->_localName = $name;
-        $element->_prefix    = $prefix;
-
-        if ($uri !== null) {
-            $element->namespace = $uri;
-        }
-
-        $element->init();
-        return $element;
+        return array_merge(
+            $this->_attributes,
+            array_combine(array_column($namespaces, 0), array_column($namespaces, 1))
+        );
     }
 
     /**
-     * @param string $name
-     * @param string $uri
+     * Prefixes $name with attribute associated with $uri
+     *
+     * @param string $name Name to prefix
+     * @param string $uri  Namespace URI
+     *
      * @return string
      */
     protected function _prefix(string $name, string $uri): string
@@ -345,12 +441,23 @@ class XmlElement
         return "{$prefix}:{$name}";
     }
 
+    public function __toString()
+    {
+        return trim($this->xml(true));
+    }
+
+    /**
+     * Splits name into local-name and prefix
+     *
+     * @param $name
+     * @return array [$name, $prefix]
+     */
     public static function resolve($name)
     {
         $prefix = null;
         if (($pos = strpos($name, ':')) !== false) {
             $prefix = substr($name, 0, $pos);
-            $name   = substr($name, $pos + 1);
+            $name = substr($name, $pos + 1);
         }
 
         return [$name, $prefix];
