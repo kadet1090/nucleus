@@ -59,6 +59,8 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $element = new XmlElement('tag');
         $element->setAttribute('attr', 'value');
 
+        $this->assertTrue($element->hasAttribute('attr'));
+
         $this->assertEquals('value', $element->getAttribute('attr'));
         $this->assertEquals(['attr' => 'value'], $element->attributes);
     }
@@ -68,6 +70,9 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $element = new XmlElement('tag');
         $element->setNamespace(self::XMLNS, 'prefix');
         $element->setAttribute('attr', 'value', self::XMLNS);
+
+        $this->assertTrue($element->hasAttribute('attr', self::XMLNS));
+        $this->assertTrue($element->hasAttribute('prefix:attr'));
 
         $this->assertEquals('value', $element->getAttribute('attr', self::XMLNS));
         $this->assertEquals('value', $element->getAttribute('prefix:attr'));
@@ -81,6 +86,10 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
     {
         $element = new XmlElement('tag');
         $element->setAttribute('attr', 'value', self::XMLNS);
+
+
+        $this->assertTrue($element->hasAttribute('attr', self::XMLNS));
+        $this->assertTrue($element->hasAttribute('prefix:attr'));
 
         $this->assertEquals('value', $element->getAttribute('attr', self::XMLNS));
         $this->assertEquals('value', $element->getAttribute('prefix:attr'));
@@ -156,14 +165,6 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $parent->append([]);
     }
 
-    public function testSetNamespaceViaXmlns()
-    {
-        $element = new XmlElement('tag');
-        $element->setAttribute('prefix', self::XMLNS, 'http://www.w3.org/2000/xmlns/');
-
-        $this->assertEquals([ self::XMLNS => 'prefix' ], $element->namespaces);
-    }
-
     public function testXmlOutput()
     {
         $parent = new XmlElement('parent', self::XMLNS);
@@ -205,7 +206,18 @@ XML;
         $parent->append($foo1 = new XmlElement('foo'));
         $parent->append($foo2 = new XmlElement('foo'));
 
-        $this->assertEquals([ $foo1, $foo2 ], array_values($parent->elements('foo')));
+        $this->assertEquals([ $foo1, $foo2 ], $parent->elements('foo'));
+    }
+
+    public function testElementFinding()
+    {
+        $parent = new XmlElement('parent');
+        $parent->append($foo = new XmlElement('foo'));
+        $parent->append($foobar = new XmlElement('foobar'));
+        $parent->append($bar = new XmlElement('bar', 'urn:bar'));
+
+        $this->assertEquals($foo, $parent->find(function(XmlElement $e) { return $e->localName === 'foo'; }));
+        $this->assertFalse($parent->find(function(XmlElement $e) { return false; }));
     }
 
     public function testQuery()

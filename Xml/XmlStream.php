@@ -159,7 +159,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         return $this->_stream->getAttribute($name === 'lang' ? 'xml:lang' : $name);
     }
 
-    public function __set()
+    public function __set($name, $value)
     {
         throw new ReadOnlyException('Stream attributes are read-only.');
     }

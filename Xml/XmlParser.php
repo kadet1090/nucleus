@@ -97,9 +97,9 @@ class XmlParser implements BetterEmitterInterface
         foreach ($attrs as $attr => $value) {
             if (strpos($attr, 'xmlns') === 0) {
                 $namespaces[substr($attr, 6) ?: null] = $value;
+            } else {
+                $attributes[$attr] = $value;
             }
-
-            $attributes[$attr] = $value;
         }
 
         return [$attributes, $namespaces];
@@ -123,6 +123,10 @@ class XmlParser implements BetterEmitterInterface
 
         /** @var XmlElement $element */
         $element = $this->factory->create($uri, $tag, [ $name, $uri ]);
+
+        foreach ($namespaces as $prefix => $uri) {
+            $element->setNamespace($uri, $prefix);
+        }
         foreach ($attributes as $name => $value) {
             $element->setAttribute($name, $value);
         }

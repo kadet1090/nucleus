@@ -211,26 +211,17 @@ class XmlElement
     /**
      * Sets XML attribute of element
      *
-     * For `http://www.w3.org/2000/xmlns/` URI it acts like `setNamespace($value, $attribute)`
-     *
      * @param string      $attribute Attribute name, optionally with prefix
      * @param mixed       $value     Attribute value
      * @param string|null $uri       XML Namespace URI of attribute, prefix will be automatically looked up
      */
     public function setAttribute(string $attribute, $value, string $uri = null)
     {
-        if ($uri === 'http://www.w3.org/2000/xmlns/') {
-            $this->setNamespace($value, $attribute);
-            return;
-        }
-
         $this->_attributes[$this->_prefix($attribute, $uri)] = $value;
     }
 
     /**
      * Returns value of specified attribute.
-     *
-     * For `http://www.w3.org/2000/xmlns/` URI it acts like `lookupUri($attribute)`
      *
      * @param string      $attribute Attribute name, optionally with prefix
      * @param string|null $uri       XML Namespace URI of attribute, prefix will be automatically looked up
@@ -238,10 +229,6 @@ class XmlElement
      */
     public function getAttribute(string $attribute, string $uri = null)
     {
-        if ($uri === 'http://www.w3.org/2000/xmlns/') {
-            return $this->lookupUri($attribute);
-        }
-
         return $this->_attributes[$this->_prefix($attribute, $uri)] ?? false;
     }
 
@@ -399,7 +386,25 @@ class XmlElement
      */
     public function all($predicate)
     {
-        return array_filter($this->_children, filter\predicate($predicate));
+        return array_values(array_filter($this->_children, filter\predicate($predicate)));
+    }
+
+    /**
+     * Iterates over matching elements
+     *
+     * @param callable|string $predicate Predicate or class name
+     *
+     * @return XmlElement|false
+     */
+    public function find($predicate)
+    {
+        foreach ($this->_children as $index => $child) {
+            if($predicate($child)) {
+                return $child;
+            }
+        }
+
+        return false;
     }
 
     /**
