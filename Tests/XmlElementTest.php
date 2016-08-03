@@ -216,8 +216,8 @@ XML;
         $parent->append($foobar = new XmlElement('foobar'));
         $parent->append($bar = new XmlElement('bar', 'urn:bar'));
 
-        $this->assertEquals($foo, $parent->find(function(XmlElement $e) { return $e->localName === 'foo'; }));
-        $this->assertFalse($parent->find(function(XmlElement $e) { return false; }));
+        $this->assertEquals($foo, $parent->get(function(XmlElement $e) { return $e->localName === 'foo'; }));
+        $this->assertFalse($parent->get(function(XmlElement $e) { return false; }));
     }
 
     public function testQuery()
