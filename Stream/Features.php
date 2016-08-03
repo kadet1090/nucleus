@@ -15,40 +15,34 @@
 
 namespace Kadet\Xmpp\Stream;
 
+use Kadet\Xmpp\Stream\Features\StartTls;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
-use Kadet\Xmpp\XmppStream;
 
 /**
  * Class Features
  * @package Kadet\Xmpp\Stream
  *
- * @property-read int $startTls
+ * @property-read false|StartTls $startTls
+ * @property-read string[]       $mechanisms
  */
 class Features extends XmlElement
 {
-    const TLS_UNAVAILABLE = false;
-    const TLS_AVAILABLE   = true;
-    const TLS_REQUIRED    = 2;
-
     use Accessors;
 
+    /**
+     * @return false|StartTls
+     */
     public function getStartTls()
     {
-        if (!($tls = $this->element('starttls', XmppStream::TLS_NAMESPACE))) {
-            return self::TLS_UNAVAILABLE;
-        }
-
-        if ($tls->element('required')) {
-            return self::TLS_REQUIRED;
-        }
-
-        return self::TLS_AVAILABLE;
+        return $this->get(StartTls::class);
     }
 
     public function getMechanisms()
     {
-        return iterator_to_array($this->query(".//sasl:mechanism")->with('sasl', XmppClient::SASL_NAMESPACE)->query());
+        return array_map(function(XmlElement $element) {
+            return $element->innerXml;
+        }, $this->get(\Kadet\Xmpp\Utils\filter\tag('mechanisms'))->children ?? []);
     }
 }

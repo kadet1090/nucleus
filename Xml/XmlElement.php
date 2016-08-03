@@ -396,8 +396,9 @@ class XmlElement
      *
      * @return XmlElement|false
      */
-    public function find($predicate)
+    public function get($predicate)
     {
+        $predicate = filter\predicate($predicate);
         foreach ($this->_children as $index => $child) {
             if($predicate($child)) {
                 return $child;

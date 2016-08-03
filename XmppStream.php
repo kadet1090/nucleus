@@ -17,17 +17,15 @@ namespace Kadet\Xmpp;
 
 use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
-use Kadet\Xmpp\Stream\Error;
 use Kadet\Xmpp\Stream\Features;
+use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XmlParser;
 use Kadet\Xmpp\Xml\XmlStream;
 use React\Stream\DuplexStreamInterface;
-use Kadet\Xmpp\Utils\filter as with;
 
 class XmppStream extends XmlStream
 {
-    const TLS_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-tls';
 
     private $_attributes = [];
     private $_lang;
@@ -36,8 +34,7 @@ class XmppStream extends XmlStream
     {
         parent::__construct($parser, $transport);
 
-        $this->_parser->factory->register(Features::class, self::NAMESPACE_URI, 'features');
-        $this->_parser->factory->register(Error::class,    self::NAMESPACE_URI, 'error');
+        $this->_parser->factory->load(require __DIR__.'/XmlElementLookup.php');
 
         $this->_lang = $lang;
 
@@ -47,7 +44,7 @@ class XmppStream extends XmlStream
 
         $this->on('element', function (XmlElement $element) {
             $this->handleTls($element);
-        }, with\xmlns(self::TLS_NAMESPACE));
+        }, with\xmlns(Features\StartTls::XMLNS));
     }
 
     public function start(array $attributes = [])
@@ -68,12 +65,12 @@ class XmppStream extends XmlStream
 
     protected function handleFeatures(Features $element)
     {
-        if ($element->startTls >= Features::TLS_AVAILABLE) {
+        if ($element->startTls) {
             if ($this->_decorated instanceof SecureStream) {
-                $this->write(XmlElement::plain('starttls', self::TLS_NAMESPACE));
+                $this->write(XmlElement::plain('starttls', Features\StartTls::XMLNS));
 
                 return true; // Stop processing
-            } elseif ($element->startTls === Features::TLS_REQUIRED) {
+            } elseif ($element->startTls->required) {
                 throw new TlsException('Encryption is not available, but server requires it.');
             } else {
                 $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
