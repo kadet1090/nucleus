@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Xml;
 
-
 class XPathQuery
 {
     private $_query;
@@ -33,7 +32,7 @@ class XPathQuery
     public function query(string $query = null)
     {
         /** @var \DOMNode $element */
-        foreach($this->_xpath->query($query ?: $this->_query) as $element) {
+        foreach ($this->_xpath->query($query ?: $this->_query) as $element) {
             yield $this->getElementFromPath($element->getNodePath());
         }
     }
@@ -70,14 +69,14 @@ class XPathQuery
         array_shift($path);
 
         $current = $this->_context;
-        foreach($path as $chunk) {
+        foreach ($path as $chunk) {
             // Chunk is in format node-name[index], parse it with regex
             preg_match('/([\w\*]+)(?:\[([0-9]+)\])?/', $chunk, $matches);
 
             $name  = $matches[1];
             $index = isset($matches[2]) ? $matches[2] - 1 : 0;
 
-            if($name == '*') {
+            if ($name == '*') {
                 // Path returns * if namespace occurs so we need to obtain index-th child
                 $current = $current->children[$index];
             } else {

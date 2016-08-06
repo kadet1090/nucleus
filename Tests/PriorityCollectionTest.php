@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Tests;
 
-
 use Kadet\Xmpp\Utils\PriorityCollection;
 
 class PriorityCollectionTest extends \PHPUnit_Framework_TestCase

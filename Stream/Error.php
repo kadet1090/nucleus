@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Stream;
 
-
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 
@@ -34,12 +33,12 @@ class Error extends XmlElement
 
     public function getKind()
     {
-        return $this->query("./xmpp:*")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)->localName;
+        return $this->query("./xmpp:*")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->current()->localName;
     }
 
     public function getText()
     {
-        if($text = $this->query(".//xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->item(0)) {
+        if ($text = $this->query(".//xmpp:text")->with('xmpp', 'urn:ietf:params:xml:ns:xmpp-streams')->query()->current()) {
             return $text;
         }
 

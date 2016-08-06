@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Stream\Features;
 
-
 use Kadet\Xmpp\Xml\XmlElement;
 
 /**

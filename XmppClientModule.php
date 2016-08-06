@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp;
 
-
 use Kadet\Xmpp\Module\ClientModuleInterface;
 
 abstract class XmppClientModule implements ClientModuleInterface

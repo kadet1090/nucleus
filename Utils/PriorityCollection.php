@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Traversable;
 
 class PriorityCollection implements \IteratorAggregate, \Countable
@@ -62,7 +61,7 @@ class PriorityCollection implements \IteratorAggregate, \Countable
 
     public function remove($value)
     {
-        $this->_collection = array_filter($this->_collection, function($e) use ($value) {
+        $this->_collection = array_filter($this->_collection, function ($e) use ($value) {
             return $e[1] !== $value;
         });
 
@@ -71,7 +70,7 @@ class PriorityCollection implements \IteratorAggregate, \Countable
 
     private function rebuildCache()
     {
-        usort($this->_collection, function($a, $b) {
+        usort($this->_collection, function ($a, $b) {
             return $b[0] <=> $a[0];
         });
 

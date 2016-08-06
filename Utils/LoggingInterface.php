@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Psr\Log\LoggerInterface;
 
 interface LoggingInterface

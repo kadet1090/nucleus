@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Network;
 
-
 use Kadet\Xmpp\Utils\BetterEmitterInterface;
 use Kadet\Xmpp\Utils\LoggingInterface;
 use React\EventLoop\LoopInterface;

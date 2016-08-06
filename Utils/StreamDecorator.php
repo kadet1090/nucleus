@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 /**
  * XMPP Library
  *
@@ -14,7 +14,6 @@
  */
 
 namespace Kadet\Xmpp\Utils;
-
 
 use React\Stream\DuplexStreamInterface;
 use React\Stream\WritableStreamInterface;

@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Kadet\Highlighter\Utils\Console;
 
 class Dumper
@@ -37,16 +36,16 @@ class Dumper
 
     private function getDumper($value)
     {
-        if(is_object($value)) {
+        if (is_object($value)) {
             $class = get_class($value);
             foreach (array_merge([$class], class_parents($class), class_implements($class)) as $class) {
-                if(isset($this->_dumpers[$class])) {
+                if (isset($this->_dumpers[$class])) {
                     return $this->_dumpers[$class];
                 }
             }
         }
 
-        if(isset($this->_dumpers[gettype($value)])) {
+        if (isset($this->_dumpers[gettype($value)])) {
             return $this->_dumpers[gettype($value)];
         }
 
@@ -64,7 +63,8 @@ class Dumper
     private function _dumpObject($value)
     {
         ob_start();
-            var_dump($value);
+        var_dump($value);
+
         return trim(ob_get_flush());
     }
 
@@ -73,7 +73,7 @@ class Dumper
         $console = Console::get();
 
         $result = $console->styled(['color' => 'yellow'], 'array').' with '.$console->styled(['color' => 'magenta'], count($array)).' elements:'.PHP_EOL;
-        foreach($array as $key => $value) {
+        foreach ($array as $key => $value) {
             $result .= "\t".str_replace("\n", "\n\t", '['.$this->dump($key).']: '.$this->dump($value)).PHP_EOL;
         }
 

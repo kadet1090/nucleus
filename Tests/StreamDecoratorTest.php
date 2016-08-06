@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Tests;
 
-
 use Kadet\Xmpp\Utils\StreamDecorator;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\ThroughStream;
@@ -57,7 +56,7 @@ class StreamDecoratorTest extends \PHPUnit_Framework_TestCase
 
         /** @var StreamDecorator $decorator */
         $decorator = $this->getStreamMock($foo);
-        $mock = $this->getMockBuilder('stdClass')->setMethods(['callback'])->getMock();
+        $mock      = $this->getMockBuilder('stdClass')->setMethods(['callback'])->getMock();
         $mock->expects($this->once())->method('callback')->with('bar');
 
 
@@ -78,7 +77,7 @@ class StreamDecoratorTest extends \PHPUnit_Framework_TestCase
 
         /** @var StreamDecorator $decorator */
         $decorator = $this->getStreamMock($decorated);
-        $mock = $this->getMockBuilder('stdClass')->setMethods(['callback'])->getMock();
+        $mock      = $this->getMockBuilder('stdClass')->setMethods(['callback'])->getMock();
         $mock->expects($this->once())->method('callback')->withAnyParameters();
 
 

@@ -24,5 +24,4 @@ namespace Kadet\Xmpp\Utils;
  */
 interface Immutable
 {
-
 }

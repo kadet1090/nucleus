@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Module;
 
-
 use Fabiang\Sasl\Authentication\AuthenticationInterface;
 use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
 use Fabiang\Sasl\Exception\InvalidArgumentException;
@@ -51,17 +50,16 @@ class SaslAuthenticator extends XmppClientModule implements Authenticator
     public function setClient(XmppClient $client)
     {
         parent::setClient($client);
-        $client->on('features', function(Features $features) {
+        $client->on('features', function (Features $features) {
             return $this->handleFeatures($features);
         });
     }
 
     protected function handleFeatures(Features $features)
     {
-        if(!empty($features->mechanisms)) {
+        if (!empty($features->mechanisms)) {
             $sasl = new Sasl();
-            foreach($features->mechanisms as $name)
-            {
+            foreach ($features->mechanisms as $name) {
                 try {
                     $mechanism = $sasl->factory($name, [
                         'authcid'  => $this->_client->jid->local,
@@ -74,7 +72,7 @@ class SaslAuthenticator extends XmppClientModule implements Authenticator
 
                     $auth = new XmlElement('auth', self::XMLNS);
                     $auth->setAttribute('mechanism', $name);
-                    if($mechanism instanceof ChallengeAuthenticationInterface) {
+                    if ($mechanism instanceof ChallengeAuthenticationInterface) {
                         try {
                             $response = base64_encode($mechanism->createResponse());
                         } catch (InvalidArgumentException $e) {
@@ -83,11 +81,11 @@ class SaslAuthenticator extends XmppClientModule implements Authenticator
 
                         $auth->append($response);
 
-                        $callback = $this->_client->on('element', function(XmlElement $challenge) use ($mechanism) {
+                        $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
                             $this->handleChallenge($challenge, $mechanism);
                         }, with\all(with\tag('challenge'), with\xmlns(self::XMLNS)));
 
-                        $this->_client->on('element', function(XmlElement $result) use ($callback) {
+                        $this->_client->on('element', function (XmlElement $result) use ($callback) {
                             $this->handleAuthResult($result, $callback);
                         }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
                     } else {
@@ -96,7 +94,8 @@ class SaslAuthenticator extends XmppClientModule implements Authenticator
                     $this->_client->write($auth);
 
                     return false;
-                } catch (InvalidArgumentException $e) { }
+                } catch (InvalidArgumentException $e) {
+                }
             }
         }
 
@@ -115,7 +114,7 @@ class SaslAuthenticator extends XmppClientModule implements Authenticator
     {
         $this->_client->removeListener('element', $callback);
 
-        if($result->localName === 'failure') {
+        if ($result->localName === 'failure') {
             throw new AuthenticationException('Unable to auth.', [trim($result->innerXml)]);
         }
 

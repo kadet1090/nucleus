@@ -15,16 +15,17 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Interop\Container\ContainerInterface;
 
 trait ServiceManager
 {
-    public function get($id) {
+    public function get($id)
+    {
         return $this->getContainer()->get($id);
     }
 
-    public function has($id) {
+    public function has($id)
+    {
         return $this->getContainer()->has($id);
     }
 

@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Module;
 
-
 use Kadet\Xmpp\XmppClient;
 
 interface ClientModuleInterface

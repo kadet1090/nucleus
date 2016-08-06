@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Tests;
 
-
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 
@@ -24,9 +23,9 @@ class JidTest extends \PHPUnit_Framework_TestCase
     public function validJidProvider()
     {
         return [
-            'domain-part only' => ['hostname.tld'],
-            'bare jid' => ['hostname.tld', 'local-part'],
-            'full jid' => ['hostname.tld', 'local-part', 'resource'],
+            'domain-part only'          => ['hostname.tld'],
+            'bare jid'                  => ['hostname.tld', 'local-part'],
+            'full jid'                  => ['hostname.tld', 'local-part', 'resource'],
             'domain-part with resource' => ['hostname.tld', null, 'resource'],
 
             'bare jid from string' => ['local-part@hostname.tld'],

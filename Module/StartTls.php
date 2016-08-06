@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Module;
 
-
 use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Features;

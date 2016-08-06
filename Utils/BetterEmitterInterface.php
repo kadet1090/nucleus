@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Utils;
 
-
 use Evenement\EventEmitterInterface;
 
 interface BetterEmitterInterface extends EventEmitterInterface

@@ -15,8 +15,6 @@
 
 namespace Kadet\Xmpp\Module;
 
-
 interface Authenticator extends ClientModuleInterface
 {
-
 }

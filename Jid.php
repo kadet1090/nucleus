@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare (strict_types = 1);
 /**
  * XMPP Library
  *
@@ -14,7 +14,6 @@
  */
 
 namespace Kadet\Xmpp;
-
 
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\Accessors;
@@ -52,8 +51,8 @@ class Jid implements Immutable
 
         self::validate($address, $local, $resource);
 
-        $this->_domain = $address;
-        $this->_local = $local;
+        $this->_domain   = $address;
+        $this->_local    = $local;
         $this->_resource = $resource;
     }
 

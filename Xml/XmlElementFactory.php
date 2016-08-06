@@ -48,8 +48,9 @@ class XmlElementFactory
         $this->_lookup[$namespace] = $class;
     }
 
-    public function load(array $dictionary) {
-        foreach($dictionary as $element) {
+    public function load(array $dictionary)
+    {
+        foreach ($dictionary as $element) {
             $this->register($element[0], $element['uri'] ?? null, $element['name'] ?? null);
         }
     }

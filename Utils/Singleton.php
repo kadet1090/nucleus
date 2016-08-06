@@ -35,5 +35,7 @@ trait Singleton
         return self::$_instance;
     }
 
-    public function init() {}
+    public function init()
+    {
+    }
 }

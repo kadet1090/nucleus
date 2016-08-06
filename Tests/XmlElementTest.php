@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Tests;
 
-
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XPathQuery;
@@ -225,8 +224,8 @@ XML;
         $parent->append($foobar = new XmlElement('foobar'));
         $parent->append($bar = new XmlElement('bar', 'urn:bar'));
 
-        $this->assertEquals($foo, $parent->get(function(XmlElement $e) { return $e->localName === 'foo'; }));
-        $this->assertFalse($parent->get(function(XmlElement $e) { return false; }));
+        $this->assertEquals($foo, $parent->get(function (XmlElement $e) { return $e->localName === 'foo'; }));
+        $this->assertFalse($parent->get(function (XmlElement $e) { return false; }));
     }
 
     public function testQuery()

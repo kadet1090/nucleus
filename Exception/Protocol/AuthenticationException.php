@@ -15,10 +15,8 @@
 
 namespace Kadet\Xmpp\Exception\Protocol;
 
-
 use Kadet\Xmpp\Exception\ProtocolException;
 
 class AuthenticationException extends ProtocolException
 {
-
 }

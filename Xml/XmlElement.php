@@ -47,11 +47,11 @@ class XmlElement
      * @var array
      */
     public static $tidy = [
-        'indent' => true,
-        'input-xml' => true,
-        'output-xml' => true,
+        'indent'           => true,
+        'input-xml'        => true,
+        'output-xml'       => true,
         'drop-empty-paras' => false,
-        'wrap' => 0
+        'wrap'             => 0
     ];
 
     /** @var string */
@@ -85,7 +85,7 @@ class XmlElement
         list($name, $prefix) = self::resolve($name);
 
         $this->_localName = $name;
-        $this->_prefix = $prefix;
+        $this->_prefix    = $prefix;
 
         if ($uri !== null) {
             $this->namespace = $uri;
@@ -262,7 +262,7 @@ class XmlElement
     {
         if (!$this->_prefix && ($prefix = $parent->lookupPrefix($this->namespace)) !== false) {
             $this->_namespaces[$this->namespace] = $prefix;
-            $this->_prefix = $prefix;
+            $this->_prefix                       = $prefix;
         }
 
         $this->_parent = $parent;
@@ -283,11 +283,11 @@ class XmlElement
         if (!is_string($element) && !$element instanceof XmlElement) {
             throw new InvalidArgumentException(helper\format('$element should be either string or object of {class} class, {type} given', [
                 'class' => XmlElement::class,
-                'type' => helper\typeof($element)
+                'type'  => helper\typeof($element)
             ]));
         }
 
-        if(empty($element)) {
+        if (empty($element)) {
             return false;
         }
 
@@ -404,7 +404,7 @@ class XmlElement
     {
         $predicate = filter\predicate($predicate);
         foreach ($this->_children as $index => $child) {
-            if($predicate($child)) {
+            if ($predicate($child)) {
                 return $child;
             }
         }
@@ -449,7 +449,7 @@ class XmlElement
      */
     protected function _prefix(string $name, string $uri = null): string
     {
-        if($uri === null) {
+        if ($uri === null) {
             return $name;
         }
 
@@ -476,7 +476,7 @@ class XmlElement
         $prefix = null;
         if (($pos = strpos($name, ':')) !== false) {
             $prefix = substr($name, 0, $pos);
-            $name = substr($name, $pos + 1);
+            $name   = substr($name, $pos + 1);
         }
 
         return [$name, $prefix];

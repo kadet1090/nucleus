@@ -39,11 +39,12 @@ trait BetterEmitter
 
     public function removeListener($event, callable $listener)
     {
-        if(!isset($this->listeners[$event])) {
+        if (!isset($this->listeners[$event])) {
             return false;
         }
 
         $this->listeners[$event]->remove($listener);
+
         return true;
     }
 
@@ -65,11 +66,12 @@ trait BetterEmitter
 
     private function addListener($event, callable $listener, int $priority = 0)
     {
-        if(!isset($this->listeners[$event])) {
+        if (!isset($this->listeners[$event])) {
             $this->listeners[$event] = new PriorityCollection();
         }
 
         $this->listeners[$event]->insert($listener, $priority);
+
         return $listener;
     }
 
@@ -80,6 +82,7 @@ trait BetterEmitter
         }
 
         $condition = with\predicate($condition);
+
         return function (...$arguments) use ($listener, $condition) {
             if ($condition(...$arguments)) {
                 $listener(...$arguments);

@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Network\Connector;
 
-
 use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Network\TcpStream;
 use Kadet\Xmpp\Utils\BetterEmitter;
@@ -41,9 +40,10 @@ class TcpXmppConnector implements Connector
                 'port' => $port
             ]);
 
-            if($stream = @stream_socket_client("tcp://$ip:$port")) {
+            if ($stream = @stream_socket_client("tcp://$ip:$port")) {
                 $stream = new TcpStream($stream, $this->_loop);
                 $this->emit('connect', [ $stream ]);
+
                 return $stream;
             }
         }

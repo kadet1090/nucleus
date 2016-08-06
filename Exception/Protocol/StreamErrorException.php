@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp\Exception\Protocol;
 
-
 use Exception;
 use Kadet\Xmpp\Exception\ProtocolException;
 use Kadet\Xmpp\Stream\Error;

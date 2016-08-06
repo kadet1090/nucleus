@@ -15,7 +15,6 @@
 
 namespace Kadet\Xmpp;
 
-
 use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
@@ -101,9 +100,6 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->register($module);
         }
 
-
-        $this->connect();
-
         $this->_connector->on('connect', function (...$arguments) {
             return $this->emit('connect', $arguments);
         });
@@ -111,6 +107,8 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->on('element', function (Features $element) {
             $this->emit('features', [$element]);
         }, Features::class);
+
+        $this->connect();
     }
 
     public function start(array $attributes = [])

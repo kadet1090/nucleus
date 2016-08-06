@@ -15,8 +15,6 @@
 
 namespace Kadet\Xmpp\Exception;
 
-
 class ReadOnlyException extends PropertyAccessException
 {
-
 }

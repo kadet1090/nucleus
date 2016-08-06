@@ -136,7 +136,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      */
     public function close()
     {
-        if($this->isOpened()) {
+        if ($this->isOpened()) {
             $this->write('</stream:stream>');
             $this->_isOpened = false;
         }
@@ -171,7 +171,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
     private function handleError(Error $element)
     {
-        if($this->emit('stream.error', [ $element ])) {
+        if ($this->emit('stream.error', [ $element ])) {
             throw new StreamErrorException($element);
         }
 

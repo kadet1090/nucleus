@@ -14,6 +14,7 @@
  */
 
 namespace Kadet\Xmpp\Utils\helper;
+
 use Kadet\Xmpp\Utils\Dumper;
 
 /**
@@ -24,9 +25,9 @@ use Kadet\Xmpp\Utils\Dumper;
  */
 function typeof($value) : string
 {
-    if(is_object($value)) {
+    if (is_object($value)) {
         return "object of type ".get_class($value);
-    } elseif(is_resource($value)) {
+    } elseif (is_resource($value)) {
         return get_resource_type($value).' resource';
     } else {
         return gettype($value);
@@ -35,7 +36,7 @@ function typeof($value) : string
 
 function partial(callable $callable, $argument, int $position = 0) : callable
 {
-    return function(...$arguments) use ($callable, $argument, $position) {
+    return function (...$arguments) use ($callable, $argument, $position) {
         $arguments = array_merge(
             array_slice($arguments, 0, $position),
             [ $argument ],
@@ -53,5 +54,5 @@ function dd($value)
 
 function format($string, array $arguments = [])
 {
-    return str_replace(array_map(function($e) { return "{{$e}}"; }, array_keys($arguments)), $arguments, $string);
+    return str_replace(array_map(function ($e) { return "{{$e}}"; }, array_keys($arguments)), $arguments, $string);
 }

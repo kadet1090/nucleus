@@ -58,6 +58,7 @@ class DnsResolver implements \IteratorAggregate
                 return [$record['target'], $record['port']];
             }, $result));
         }
+
         return true;
     }
 }
