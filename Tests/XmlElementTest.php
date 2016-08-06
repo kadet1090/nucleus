@@ -165,6 +165,15 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $parent->append([]);
     }
 
+    public function testXmlOutputWithEmptyChild()
+    {
+        $parent = new XmlElement('parent');
+        $parent->append('');
+
+        $xml = /** @lang regex */ '/<parent\s*\/>/si';
+        $this->assertRegExp($xml, (string)$parent);
+    }
+
     public function testXmlOutput()
     {
         $parent = new XmlElement('parent', self::XMLNS);

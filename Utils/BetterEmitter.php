@@ -34,7 +34,7 @@ trait BetterEmitter
 
     public function once($event, callable $listener, $condition = null, int $priority = 0)
     {
-        $this->on($event, $this->getOnceCallable($listener, $event), $condition, $priority);
+        $this->on($event, $this->getOnceCallable($this->getConditionalCallable($listener, $condition), $event), null, $priority);
     }
 
     public function removeListener($event, callable $listener)

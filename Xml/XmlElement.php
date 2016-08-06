@@ -287,6 +287,10 @@ class XmlElement
             ]));
         }
 
+        if(empty($element)) {
+            return false;
+        }
+
         if ($element instanceof XmlElement) {
             $element->parent = $this;
         }

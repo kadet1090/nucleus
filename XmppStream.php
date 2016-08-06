@@ -63,21 +63,21 @@ class XmppStream extends XmlStream
         $this->start($this->_attributes);
     }
 
-    protected function handleFeatures(Features $element)
+    protected function handleFeatures(Features $features)
     {
-        if ($element->startTls) {
+        if ($features->startTls) {
             if ($this->_decorated instanceof SecureStream) {
-                $this->write(XmlElement::plain('starttls', Features\StartTls::XMLNS));
+                $this->write(new Features\StartTls());
 
                 return true; // Stop processing
-            } elseif ($element->startTls->required) {
+            } elseif ($features->startTls->required) {
                 throw new TlsException('Encryption is not available, but server requires it.');
             } else {
                 $this->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
         }
 
-        return true;
+        return null;
     }
 
     private function handleTls(XmlElement $response)
