@@ -29,12 +29,12 @@ trait BetterEmitter
 
     public function on($event, callable $listener, $condition = null, int $priority = 0)
     {
-        $this->addListener($event, $this->getConditionalCallable($listener, $condition), $priority);
+        return $this->addListener($event, $this->getConditionalCallable($listener, $condition), $priority);
     }
 
     public function once($event, callable $listener, $condition = null, int $priority = 0)
     {
-        $this->on($event, $this->getOnceCallable($this->getConditionalCallable($listener, $condition), $event), null, $priority);
+        return $this->on($event, $this->getOnceCallable($this->getConditionalCallable($listener, $condition), $event), null, $priority);
     }
 
     public function removeListener($event, callable $listener)
@@ -70,6 +70,7 @@ trait BetterEmitter
         }
 
         $this->listeners[$event]->insert($listener, $priority);
+        return $listener;
     }
 
     private function getConditionalCallable(callable $listener, $condition) : callable

@@ -60,6 +60,7 @@ class XmppStream extends XmlStream
 
     public function restart()
     {
+        $this->getLogger()->debug('Restarting stream', $this->_attributes);
         $this->start($this->_attributes);
     }
 

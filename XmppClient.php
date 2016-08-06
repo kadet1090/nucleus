@@ -16,6 +16,7 @@
 namespace Kadet\Xmpp;
 
 
+use Fabiang\Sasl\Authentication\AuthenticationInterface;
 use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
 use Fabiang\Sasl\Sasl;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
@@ -117,49 +118,72 @@ class XmppClient extends XmppStream
             return true;
         }
 
-        $sasl = new Sasl();
-        foreach($features->mechanisms as $name)
-        {
-            try {
-                $mechanism = $sasl->factory($name, [
-                    'authcid'  => $this->_jid->local,
-                    'secret'   => $this->_password,
-                    'hostname' => $this->_jid->domain,
-                    'service'  => 'xmpp'
-                ]);
+        if(!empty($features->mechanisms)) {
+            $sasl = new Sasl();
+            foreach($features->mechanisms as $name)
+            {
+                try {
+                    $mechanism = $sasl->factory($name, [
+                        'authcid'  => $this->_jid->local,
+                        'secret'   => $this->_password,
+                        'hostname' => $this->_jid->domain,
+                        'service'  => 'xmpp'
+                    ]);
 
-                $this->getLogger()->debug('Starting auth using {name} mechanism.', ['name' => $name]);
+                    $this->getLogger()->debug('Starting auth using {name} mechanism.', ['name' => $name]);
 
-                $auth = new XmlElement('auth', self::SASL_NAMESPACE);
-                $auth->setAttribute('mechanism', $name);
-                if($mechanism instanceof ChallengeAuthenticationInterface) {
-                    try {
-                        $response = base64_encode($mechanism->createResponse());
-                    } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) {
-                        $response = '=';
+                    $auth = new XmlElement('auth', self::SASL_NAMESPACE);
+                    $auth->setAttribute('mechanism', $name);
+                    if($mechanism instanceof ChallengeAuthenticationInterface) {
+                        try {
+                            $response = base64_encode($mechanism->createResponse());
+                        } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) {
+                            $response = '=';
+                        }
+
+                        $auth->append($response);
+
+                        $callback = $this->on('element', function(XmlElement $challenge) use ($mechanism) {
+                            $this->handleChallenge($challenge, $mechanism);
+                        }, with\all(with\tag('challenge'), with\xmlns(self::SASL_NAMESPACE)));
+
+                        $this->on('element', function(XmlElement $result) use ($callback) {
+                            $this->handleAuthResult($result, $callback);
+                        }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::SASL_NAMESPACE)));
+                    } else {
+                        $auth->append(base64_encode($mechanism->createResponse()));
                     }
+                    $this->write($auth);
 
-                    $auth->append($response);
+                    return true;
+                } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) { }
+            }
 
-                    $predicate = with\all(with\tag('challenge'), with\xmlns(self::SASL_NAMESPACE));
-                    $this->on('element', function(XmlElement $challenge) use ($mechanism, $predicate) {
-                        $response = new XmlElement('response', self::SASL_NAMESPACE);
-                        $response->append(base64_encode($mechanism->createResponse(base64_decode($challenge->innerXml))));
-
-                        $this->write($response);
-                    }, $predicate);
-                } else {
-                    $auth->append(base64_encode($mechanism->createResponse()));
-                }
-                $this->write($auth);
-
-                return true;
-            } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) { }
+            throw new AuthenticationException('None of available mechanisms are supported.');
         }
 
-        throw new AuthenticationException('None of available mechanisms are supported.');
+        return null;
     }
 
+    private function handleChallenge(XmlElement $challenge, AuthenticationInterface $mechanism)
+    {
+        $response = new XmlElement('response', self::SASL_NAMESPACE);
+        $response->append(base64_encode($mechanism->createResponse(base64_decode($challenge->innerXml))));
+
+        $this->write($response);
+    }
+
+    private function handleAuthResult(XmlElement $result, callable $callback)
+    {
+        $this->removeListener('element', $callback);
+
+        if($result->localName === 'failure') {
+            throw new AuthenticationException('Unable to auth.', [trim($result->innerXml)]);
+        }
+
+        $this->getLogger()->info('Successfully authorized as {name}.', ['name' => (string)$this->_jid]);
+        $this->restart();
+    }
 
     /**
      * @param $connector
