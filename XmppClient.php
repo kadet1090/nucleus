@@ -16,19 +16,18 @@
 namespace Kadet\Xmpp;
 
 
-use Fabiang\Sasl\Authentication\AuthenticationInterface;
-use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
-use Fabiang\Sasl\Sasl;
+use DI\Container;
+use DI\ContainerBuilder;
+use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
-use Kadet\Xmpp\Exception\Protocol\AuthenticationException;
+use Kadet\Xmpp\Module\Authentication;
 use Kadet\Xmpp\Network\Connector;
-use Kadet\Xmpp\Stream\Features;
-use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Utils\Accessors;
+use Kadet\Xmpp\Utils\filter as with;
+use Kadet\Xmpp\Utils\ServiceManager;
 use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
 use React\EventLoop\LoopInterface;
-
-use Kadet\Xmpp\Utils\filter as with;
 
 /**
  * Class XmppClient
@@ -36,9 +35,9 @@ use Kadet\Xmpp\Utils\filter as with;
  *
  * @property-read Jid $jid Client's jid (Jabber Identifier) address.
  */
-class XmppClient extends XmppStream
+class XmppClient extends XmppStream implements ContainerInterface
 {
-    const SASL_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-sasl';
+    use ServiceManager, Accessors;
 
     /**
      * Connector used to instantiate stream connection to server.
@@ -55,11 +54,11 @@ class XmppClient extends XmppStream
     protected $_jid;
 
     /**
-     * Client's password used in authorisation.
+     * Dependency container used as service manager.
      *
-     * @var string
+     * @var Container
      */
-    protected $_password;
+    protected $_container;
 
 
     /**
@@ -78,8 +77,10 @@ class XmppClient extends XmppStream
             $lang
         );
 
+        $this->_container = ContainerBuilder::buildDevContainer();
+
         $this->_jid      = $jid;
-        $this->_password = $password;
+        $this->register(new Authentication($password));
 
         $this->setConnector($connector);
         $this->connect();
@@ -112,79 +113,6 @@ class XmppClient extends XmppStream
         ]);
     }
 
-    protected function handleFeatures(Features $features)
-    {
-        if(parent::handleFeatures($features)) {
-            return true;
-        }
-
-        if(!empty($features->mechanisms)) {
-            $sasl = new Sasl();
-            foreach($features->mechanisms as $name)
-            {
-                try {
-                    $mechanism = $sasl->factory($name, [
-                        'authcid'  => $this->_jid->local,
-                        'secret'   => $this->_password,
-                        'hostname' => $this->_jid->domain,
-                        'service'  => 'xmpp'
-                    ]);
-
-                    $this->getLogger()->debug('Starting auth using {name} mechanism.', ['name' => $name]);
-
-                    $auth = new XmlElement('auth', self::SASL_NAMESPACE);
-                    $auth->setAttribute('mechanism', $name);
-                    if($mechanism instanceof ChallengeAuthenticationInterface) {
-                        try {
-                            $response = base64_encode($mechanism->createResponse());
-                        } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) {
-                            $response = '=';
-                        }
-
-                        $auth->append($response);
-
-                        $callback = $this->on('element', function(XmlElement $challenge) use ($mechanism) {
-                            $this->handleChallenge($challenge, $mechanism);
-                        }, with\all(with\tag('challenge'), with\xmlns(self::SASL_NAMESPACE)));
-
-                        $this->on('element', function(XmlElement $result) use ($callback) {
-                            $this->handleAuthResult($result, $callback);
-                        }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::SASL_NAMESPACE)));
-                    } else {
-                        $auth->append(base64_encode($mechanism->createResponse()));
-                    }
-                    $this->write($auth);
-
-                    return true;
-                } catch (\Fabiang\Sasl\Exception\InvalidArgumentException $e) { }
-            }
-
-            throw new AuthenticationException('None of available mechanisms are supported.');
-        }
-
-        return null;
-    }
-
-    private function handleChallenge(XmlElement $challenge, AuthenticationInterface $mechanism)
-    {
-        $response = new XmlElement('response', self::SASL_NAMESPACE);
-        $response->append(base64_encode($mechanism->createResponse(base64_decode($challenge->innerXml))));
-
-        $this->write($response);
-    }
-
-    private function handleAuthResult(XmlElement $result, callable $callback)
-    {
-        $this->removeListener('element', $callback);
-
-        if($result->localName === 'failure') {
-            throw new AuthenticationException('Unable to auth.', [trim($result->innerXml)]);
-        }
-
-        $this->getLogger()->info('Successfully authorized as {name}.', ['name' => (string)$this->_jid]);
-        $this->restart();
-    }
-
     /**
      * @param $connector
      */
@@ -204,5 +132,16 @@ class XmppClient extends XmppStream
         $this->_connector->on('connect', function($stream) {
             $this->handleConnect($stream);
         });
+    }
+
+    protected function register(XmppModule $module, $as = null)
+    {
+        $module->setClient($this);
+        $this->_container->set($as ?: get_class($module), $module);
+    }
+
+    protected function getContainer() : ContainerInterface
+    {
+        return $this->_container;
     }
 }

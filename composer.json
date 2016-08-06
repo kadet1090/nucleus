@@ -16,7 +16,8 @@
     "evenement/evenement": "2.0.*",
     "psr/log": "1.0.*",
     "kadet/keylighter": "^0.8",
-    "fabiang/sasl": "dev-rspauth"
+    "fabiang/sasl": "dev-rspauth",
+    "php-di/php-di": "^5.3"
   },
   "require-dev": {
     "bramus/monolog-colored-line-formatter": "~2.0",

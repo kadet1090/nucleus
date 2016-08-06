@@ -35,12 +35,15 @@ class XmppStream extends XmlStream
         parent::__construct($parser, $transport);
 
         $this->_parser->factory->load(require __DIR__.'/XmlElementLookup.php');
-
         $this->_lang = $lang;
 
         $this->on('element', function (Features $element) {
-            $this->handleFeatures($element);
+            $this->emit('features', [ $element ]);
         }, Features::class);
+
+        $this->on('features', function (Features $features) {
+            return $this->handleFeatures($features);
+        });
 
         $this->on('element', function (XmlElement $element) {
             $this->handleTls($element);
@@ -70,7 +73,7 @@ class XmppStream extends XmlStream
             if ($this->_decorated instanceof SecureStream) {
                 $this->write(new Features\StartTls());
 
-                return true; // Stop processing
+                return false; // Stop processing
             } elseif ($features->startTls->required) {
                 throw new TlsException('Encryption is not available, but server requires it.');
             } else {
@@ -78,7 +81,7 @@ class XmppStream extends XmlStream
             }
         }
 
-        return null;
+        return true;
     }
 
     private function handleTls(XmlElement $response)
