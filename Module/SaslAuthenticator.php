@@ -24,9 +24,8 @@ use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
-use Kadet\Xmpp\XmppClientModule;
 
-class SaslAuthenticator extends XmppClientModule implements Authenticator
+class SaslAuthenticator extends ClientModule implements Authenticator
 {
     const XMLNS = 'urn:ietf:params:xml:ns:xmpp-sasl';
 

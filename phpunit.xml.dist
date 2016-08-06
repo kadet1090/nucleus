@@ -10,6 +10,7 @@
             <exclude>
                 <directory suffix=".php">./vendor/</directory>
                 <directory suffix=".php">./Tests/</directory>
+                <file>./Utils/Dumper.php</file>
             </exclude>
         </whitelist>
     </filter>

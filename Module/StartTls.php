@@ -18,12 +18,11 @@ namespace Kadet\Xmpp\Module;
 use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
 use Kadet\Xmpp\Stream\Features;
+use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
-use Kadet\Xmpp\XmppClientModule;
-use Kadet\Xmpp\Utils\filter as with;
 
-class StartTls extends XmppClientModule
+class StartTls extends ClientModule
 {
     public function setClient(XmppClient $client)
     {
