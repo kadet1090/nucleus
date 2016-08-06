@@ -20,13 +20,17 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Module\ClientModuleInterface;
 use Kadet\Xmpp\Module\SaslAuthenticator;
+use Kadet\Xmpp\Module\StartTls;
 use Kadet\Xmpp\Network\Connector;
+use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Utils\ServiceManager;
 use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
+use Kadet\Xmpp\Xml\XmlStream;
 use React\EventLoop\LoopInterface;
 
 /**
@@ -34,10 +38,14 @@ use React\EventLoop\LoopInterface;
  * @package Kadet\Xmpp
  *
  * @property-read Jid $jid Client's jid (Jabber Identifier) address.
+ * @property-write Connector $connector
  */
-class XmppClient extends XmppStream implements ContainerInterface
+class XmppClient extends XmlStream implements ContainerInterface
 {
     use ServiceManager, Accessors;
+
+    private $_attributes = [];
+    private $_lang;
 
     /**
      * Connector used to instantiate stream connection to server.
@@ -69,26 +77,57 @@ class XmppClient extends XmppStream implements ContainerInterface
     public function __construct(Jid $jid, array $options = [])
     {
         $options = array_merge_recursive([
-            'parser' => new XmlParser(new XmlElementFactory()),
-            'lang' => 'en',
-            'modules' => []
+            'parser'  => new XmlParser(new XmlElementFactory()),
+            'lang'    => 'en',
+            'modules' => [
+                new StartTls()
+            ]
         ], $options);
 
-        parent::__construct($options['parser'], null, $options['lang']);
+        parent::__construct($options['parser'], null);
+
+        $this->_parser->factory->load(require __DIR__ . '/XmlElementLookup.php');
+
+        $this->_lang      = $options['lang'];
         $this->_container = ContainerBuilder::buildDevContainer();
+        $this->_jid       = $jid;
+        $this->connector  = $options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']);
 
-        $this->_jid = $jid;
-
-        if(isset($options['password'])) {
-            $this->register(new SaslAuthenticator($options['password']), true);
+        if (isset($options['password'])) {
+            $this->register(new SaslAuthenticator($options['password']));
         }
 
-        $this->setConnector($options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']));
+        foreach ($options['modules'] as $module) {
+            $this->register($module);
+        }
+
+
         $this->connect();
 
         $this->_connector->on('connect', function (...$arguments) {
             return $this->emit('connect', $arguments);
         });
+
+        $this->on('element', function (Features $element) {
+            $this->emit('features', [$element]);
+        }, Features::class);
+    }
+
+    public function start(array $attributes = [])
+    {
+        $this->_attributes = $attributes;
+
+        parent::start(array_merge([
+            'xmlns'    => 'jabber:client',
+            'version'  => '1.0',
+            'xml:lang' => $this->_lang
+        ], $attributes));
+    }
+
+    public function restart()
+    {
+        $this->getLogger()->debug('Restarting stream', $this->_attributes);
+        $this->start($this->_attributes);
     }
 
     public function connect()
@@ -110,7 +149,7 @@ class XmppClient extends XmppStream implements ContainerInterface
         $this->getLogger()->info("Connected to {$this->_jid->domain}");
         $this->start([
             'from' => (string)$this->_jid,
-            'to' => $this->_jid->domain
+            'to'   => $this->_jid->domain
         ]);
     }
 
@@ -135,13 +174,13 @@ class XmppClient extends XmppStream implements ContainerInterface
         });
     }
 
-    protected function register(XmppClientModule $module, $alias = true)
+    protected function register(ClientModuleInterface $module, $alias = true)
     {
         $module->setClient($this);
-        if($alias === true) {
+        if ($alias === true) {
             $parents = array_merge(class_implements($module), array_slice(class_parents($module), 1));
-            foreach($parents as $alias) {
-                if(!$this->has($alias)) {
+            foreach ($parents as $alias) {
+                if (!$this->has($alias)) {
                     $this->_container->set($alias, $module);
                 }
             }

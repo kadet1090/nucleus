@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 /**
  * XMPP Library
  *
@@ -36,7 +36,7 @@ abstract class StreamDecorator implements DuplexStreamInterface
      */
     public function __construct(DuplexStreamInterface $decorated = null)
     {
-        if($decorated !== null) {
+        if ($decorated !== null) {
             $this->exchangeStream($decorated);
         }
     }
@@ -85,7 +85,7 @@ abstract class StreamDecorator implements DuplexStreamInterface
     {
         static $events = ['data', 'end', 'drain', 'error', 'close', 'pipe'];
 
-        if($this->_decorated !== null) {
+        if ($this->_decorated !== null) {
             $this->unsubscribe($this->_decorated, $events);
         }
 
@@ -96,7 +96,7 @@ abstract class StreamDecorator implements DuplexStreamInterface
     private function unsubscribe(DuplexStreamInterface $stream, array $events)
     {
         foreach ($events as $event) {
-            if(!isset($this->_redirectors[$event])) {
+            if (!isset($this->_redirectors[$event])) {
                 continue;
             }
 
@@ -107,7 +107,7 @@ abstract class StreamDecorator implements DuplexStreamInterface
     private function subscribe(DuplexStreamInterface $stream, array $events)
     {
         foreach ($events as $event) {
-            if(!isset($this->_redirectors[$event])) {
+            if (!isset($this->_redirectors[$event])) {
                 $this->_redirectors[$event] = function (...$arguments) use ($event) {
                     $this->emit($event, $arguments);
                 };
@@ -117,5 +117,8 @@ abstract class StreamDecorator implements DuplexStreamInterface
         }
     }
 
-
+    public function getDecorated() : DuplexStreamInterface
+    {
+        return $this->_decorated;
+    }
 }
