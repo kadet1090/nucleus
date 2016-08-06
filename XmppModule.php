@@ -16,7 +16,9 @@
 namespace Kadet\Xmpp;
 
 
-abstract class XmppModule
+use Kadet\Xmpp\Module\ClientModuleInterface;
+
+abstract class XmppClientModule implements ClientModuleInterface
 {
     /**
      * Reference to XMPP Client instance.

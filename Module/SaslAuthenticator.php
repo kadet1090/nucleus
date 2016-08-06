@@ -25,9 +25,9 @@ use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
-use Kadet\Xmpp\XmppModule;
+use Kadet\Xmpp\XmppClientModule;
 
-class Authentication extends XmppModule
+class SaslAuthenticator extends XmppClientModule implements Authenticator
 {
     const XMLNS = 'urn:ietf:params:xml:ns:xmpp-sasl';
 
@@ -98,8 +98,6 @@ class Authentication extends XmppModule
                     return false;
                 } catch (InvalidArgumentException $e) { }
             }
-
-            throw new AuthenticationException('None of available mechanisms are supported.');
         }
 
         return true;

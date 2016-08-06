@@ -20,7 +20,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
-use Kadet\Xmpp\Module\Authentication;
+use Kadet\Xmpp\Module\SaslAuthenticator;
 use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter as with;
@@ -63,29 +63,30 @@ class XmppClient extends XmppStream implements ContainerInterface
 
     /**
      * XmppClient constructor.
-     * @param Jid                     $jid
-     * @param string                  $password
-     * @param Connector|LoopInterface $connector
-     * @param XmlParser|null          $parser
-     * @param string                  $lang
+     * @param Jid   $jid
+     * @param array $options
      */
-    public function __construct(Jid $jid, string $password, $connector = null, XmlParser $parser = null, $lang = 'en')
+    public function __construct(Jid $jid, array $options = [])
     {
-        parent::__construct(
-            $parser ?: new XmlParser(new XmlElementFactory()),
-            null, // will be set by event
-            $lang
-        );
+        $options = array_merge_recursive([
+            'parser' => new XmlParser(new XmlElementFactory()),
+            'lang' => 'en',
+            'modules' => []
+        ], $options);
 
+        parent::__construct($options['parser'], null, $options['lang']);
         $this->_container = ContainerBuilder::buildDevContainer();
 
-        $this->_jid      = $jid;
-        $this->register(new Authentication($password));
+        $this->_jid = $jid;
 
-        $this->setConnector($connector);
+        if(isset($options['password'])) {
+            $this->register(new SaslAuthenticator($options['password']), true);
+        }
+
+        $this->setConnector($options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']));
         $this->connect();
 
-        $this->_connector->on('connect', function(...$arguments) {
+        $this->_connector->on('connect', function (...$arguments) {
             return $this->emit('connect', $arguments);
         });
     }
@@ -109,7 +110,7 @@ class XmppClient extends XmppStream implements ContainerInterface
         $this->getLogger()->info("Connected to {$this->_jid->domain}");
         $this->start([
             'from' => (string)$this->_jid,
-            'to'   => $this->_jid->domain
+            'to' => $this->_jid->domain
         ]);
     }
 
@@ -129,15 +130,24 @@ class XmppClient extends XmppStream implements ContainerInterface
             ));
         }
 
-        $this->_connector->on('connect', function($stream) {
+        $this->_connector->on('connect', function ($stream) {
             $this->handleConnect($stream);
         });
     }
 
-    protected function register(XmppModule $module, $as = null)
+    protected function register(XmppClientModule $module, $alias = true)
     {
         $module->setClient($this);
-        $this->_container->set($as ?: get_class($module), $module);
+        if($alias === true) {
+            $parents = array_merge(class_implements($module), array_slice(class_parents($module), 1));
+            foreach($parents as $alias) {
+                if(!$this->has($alias)) {
+                    $this->_container->set($alias, $module);
+                }
+            }
+        } else {
+            $this->_container->set($alias === true ? get_class($module) : $alias, $module);
+        }
     }
 
     protected function getContainer() : ContainerInterface
