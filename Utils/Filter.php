@@ -21,14 +21,22 @@ use Kadet\Xmpp\Utils\helper;
 
 function xmlns($uri)
 {
-    return function (XmlElement $element) use ($uri) {
+    return function ($element) use ($uri) {
+        if(!$element instanceof XmlElement) {
+            return false;
+        }
+
         return $element->namespace === $uri;
     };
 }
 
 function tag($name)
 {
-    return function (XmlElement $element) use ($name) {
+    return function ($element) use ($name) {
+        if(!$element instanceof XmlElement) {
+            return false;
+        }
+
         return $element->localName === $name;
     };
 }

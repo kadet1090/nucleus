@@ -110,7 +110,7 @@ class XmlElement
      * @param string $name Element name, including prefix if needed
      * @param string $uri  Namespace URI of element
      *
-     * @return XmlElement
+     * @return static
      */
     public static function plain(string $name, string $uri = null)
     {
@@ -155,8 +155,8 @@ class XmlElement
 
         $result = "<{$this->name}";
         $result .= ' ' . implode(' ', array_map(function ($key, $value) {
-                return $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
-            }, array_keys($attributes), array_values($attributes)));
+            return $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+        }, array_keys($attributes), array_values($attributes)));
 
         if (!empty($this->_children)) {
             $result .= ">{$this->innerXml}</{$this->name}>";
@@ -217,7 +217,13 @@ class XmlElement
      */
     public function setAttribute(string $attribute, $value, string $uri = null)
     {
-        $this->_attributes[$this->_prefix($attribute, $uri)] = $value;
+        $attribute = $this->_prefix($attribute, $uri);
+        if($value === null) {
+            unset($this->_attributes[$attribute]);
+            return;
+        }
+
+        $this->_attributes[$attribute] = $value;
     }
 
     /**

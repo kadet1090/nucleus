@@ -49,6 +49,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     public function setClient(XmppClient $client)
     {
         parent::setClient($client);
+
         $client->on('features', function (Features $features) {
             return $this->handleFeatures($features);
         });
@@ -84,7 +85,8 @@ class SaslAuthenticator extends ClientModule implements Authenticator
                             $this->handleChallenge($challenge, $mechanism);
                         }, with\all(with\tag('challenge'), with\xmlns(self::XMLNS)));
 
-                        $this->_client->on('element', function (XmlElement $result) use ($callback) {
+                        $this->_client->once('element', function (XmlElement $result) use ($callback) {
+                            $this->_client->removeListener('element', $callback);
                             $this->handleAuthResult($result, $callback);
                         }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
                     } else {
@@ -111,13 +113,21 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
     private function handleAuthResult(XmlElement $result, callable $callback)
     {
-        $this->_client->removeListener('element', $callback);
-
         if ($result->localName === 'failure') {
-            throw new AuthenticationException('Unable to auth.', [trim($result->innerXml)]);
+            throw new AuthenticationException('Unable to auth. '.trim($result->innerXml));
         }
 
         $this->_client->getLogger()->info('Successfully authorized as {name}.', ['name' => (string)$this->_client->jid]);
         $this->_client->restart();
+    }
+
+    public function setPassword(string $password)
+    {
+        $this->_password = $password;
+    }
+
+    public function auth()
+    {
+        $this->handleFeatures($this->_client->features);
     }
 }

@@ -85,17 +85,22 @@ trait BetterEmitter
 
         return function (...$arguments) use ($listener, $condition) {
             if ($condition(...$arguments)) {
-                $listener(...$arguments);
+                return (bool)$listener(...$arguments);
             }
+
+            return null;
         };
     }
 
     private function getOnceCallable(callable $listener, $event) : callable
     {
         return $onceListener = function (...$arguments) use (&$onceListener, $event, $listener) {
-            $this->removeListener($event, $onceListener);
+            if(($result = $listener(...$arguments)) !== null) {
+                $this->removeListener($event, $onceListener);
+                return $result;
+            }
 
-            $listener(...$arguments);
+            return null;
         };
     }
 }

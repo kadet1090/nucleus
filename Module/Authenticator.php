@@ -17,4 +17,6 @@ namespace Kadet\Xmpp\Module;
 
 interface Authenticator extends ClientModuleInterface
 {
+    public function setPassword(string $password);
+    public function auth();
 }

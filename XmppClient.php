@@ -36,7 +36,8 @@ use React\EventLoop\LoopInterface;
  * Class XmppClient
  * @package Kadet\Xmpp
  *
- * @property-read Jid $jid Client's jid (Jabber Identifier) address.
+ * @property-read Jid        $jid      Client's jid (Jabber Identifier) address.
+ * @property-read Features   $features Features provided by that stream
  * @property-write Connector $connector
  */
 class XmppClient extends XmlStream implements ContainerInterface
@@ -67,6 +68,12 @@ class XmppClient extends XmlStream implements ContainerInterface
      */
     protected $_container;
 
+    /**
+     * Features provided by that stream
+     *
+     * @var Features
+     */
+    protected $_features;
 
     /**
      * XmppClient constructor.
@@ -105,6 +112,7 @@ class XmppClient extends XmlStream implements ContainerInterface
         });
 
         $this->on('element', function (Features $element) {
+            $this->_features = $element;
             $this->emit('features', [$element]);
         }, Features::class);
 
@@ -133,6 +141,11 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->getLogger()->debug("Connecting to {$this->_jid->domain}");
 
         $this->_connector->connect();
+    }
+
+    public function setResource(string $resource)
+    {
+        $this->_jid = new Jid($this->_jid->domain, $this->_jid->local, $resource);
     }
 
     public function getJid()
@@ -190,5 +203,10 @@ class XmppClient extends XmlStream implements ContainerInterface
     protected function getContainer() : ContainerInterface
     {
         return $this->_container;
+    }
+
+    protected function getFeatures()
+    {
+        return $this->_features;
     }
 }

@@ -54,4 +54,11 @@ trait Accessors
     {
         $this->_magic[$property] = $value;
     }
+
+    public function applyOptions(array $options)
+    {
+        foreach ($options as $key => $value) {
+            $this->$key = $value;
+        }
+    }
 }

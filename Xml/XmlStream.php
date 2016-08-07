@@ -92,7 +92,14 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
         $this->on('data', [$this->_parser, 'parse']);
         $this->_parser->on('element', function (...$arguments) {
-            $this->emit('element', $arguments);
+            try {
+                $this->emit('element', $arguments);
+            } catch(\Throwable $error) {
+                if($this->emit('exception', [ $error ])) {
+                    throw $error;
+                }
+            }
+
         });
         $this->on('close', function () { $this->_isOpened = false; });
     }
