@@ -51,11 +51,11 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         parent::setClient($client);
 
         $client->on('features', function (Features $features) {
-            return $this->handleFeatures($features);
+            return $this->auth($features);
         });
     }
 
-    protected function handleFeatures(Features $features)
+    public function auth(Features $features)
     {
         if (!empty($features->mechanisms)) {
             $sasl = new Sasl();
@@ -124,10 +124,5 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     public function setPassword(string $password)
     {
         $this->_password = $password;
-    }
-
-    public function auth()
-    {
-        $this->handleFeatures($this->_client->features);
     }
 }
