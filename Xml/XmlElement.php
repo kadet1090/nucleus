@@ -15,6 +15,7 @@
 
 namespace Kadet\Xmpp\Xml;
 
+use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter;
@@ -37,7 +38,7 @@ use Kadet\Xmpp\Utils\helper;
  *
  * @property string          $innerXml   Inner XML content
  */
-class XmlElement
+class XmlElement implements ContainerInterface
 {
     use Accessors;
 
@@ -95,12 +96,14 @@ class XmlElement
     /**
      * XmlElement constructor
      *
-     * @param string $name Element name, including prefix if needed
-     * @param string $uri  Namespace URI of element
+     * @param string $name    Element name, including prefix if needed
+     * @param string $uri     Namespace URI of element
+     * @param mixed  $content Content of element
      */
-    public function __construct(string $name, string $uri = null)
+    public function __construct(string $name, string $uri = null, $content = null)
     {
         $this->init($name, $uri);
+        $this->append($content);
     }
 
     /**
@@ -175,7 +178,7 @@ class XmlElement
      */
     public function lookupPrefix(string $uri = null)
     {
-        return $this->getNamespaces()[$uri] ?? false;
+        return $this->getNamespaces()[ $uri ] ?? false;
     }
 
     /**
@@ -218,12 +221,13 @@ class XmlElement
     public function setAttribute(string $attribute, $value, string $uri = null)
     {
         $attribute = $this->_prefix($attribute, $uri);
-        if($value === null) {
-            unset($this->_attributes[$attribute]);
+        if ($value === null) {
+            unset($this->_attributes[ $attribute ]);
+
             return;
         }
 
-        $this->_attributes[$attribute] = $value;
+        $this->_attributes[ $attribute ] = $value;
     }
 
     /**
@@ -235,7 +239,7 @@ class XmlElement
      */
     public function getAttribute(string $attribute, string $uri = null)
     {
-        return $this->_attributes[$this->_prefix($attribute, $uri)] ?? false;
+        return $this->_attributes[ $this->_prefix($attribute, $uri) ] ?? false;
     }
 
     /**
@@ -248,7 +252,7 @@ class XmlElement
      */
     public function hasAttribute(string $attribute, string $uri = null)
     {
-        return isset($this->_attributes[$this->_prefix($attribute, $uri)]);
+        return isset($this->_attributes[ $this->_prefix($attribute, $uri) ]);
     }
 
     /**
@@ -267,8 +271,8 @@ class XmlElement
     protected function setParent(XmlElement $parent)
     {
         if (!$this->_prefix && ($prefix = $parent->lookupPrefix($this->namespace)) !== false) {
-            $this->_namespaces[$this->namespace] = $prefix;
-            $this->_prefix                       = $prefix;
+            $this->_namespaces[ $this->namespace ] = $prefix;
+            $this->_prefix                         = $prefix;
         }
 
         $this->_parent = $parent;
@@ -286,15 +290,15 @@ class XmlElement
      */
     public function append($element)
     {
+        if (empty($element)) {
+            return false;
+        }
+
         if (!is_string($element) && !$element instanceof XmlElement) {
             throw new InvalidArgumentException(helper\format('$element should be either string or object of {class} class, {type} given', [
                 'class' => XmlElement::class,
                 'type'  => helper\typeof($element)
             ]));
-        }
-
-        if (empty($element)) {
-            return false;
         }
 
         if ($element instanceof XmlElement) {
@@ -327,7 +331,7 @@ class XmlElement
             $prefix = $this->_prefix;
         }
 
-        $this->_namespaces[$uri] = $prefix;
+        $this->_namespaces[ $uri ] = $prefix;
     }
 
     public function getName()
@@ -366,7 +370,7 @@ class XmlElement
      */
     public function element(string $name, string $uri = null, int $index = 0)
     {
-        return array_values($this->elements($name, $uri))[$index] ?? false;
+        return array_values($this->elements($name, $uri))[ $index ] ?? false;
     }
 
     /**
@@ -416,6 +420,11 @@ class XmlElement
         }
 
         return false;
+    }
+
+    public function has($predicate)
+    {
+        return $this->get($predicate) !== false;
     }
 
     /**

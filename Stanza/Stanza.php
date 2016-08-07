@@ -45,7 +45,7 @@ class Stanza extends XmlElement
      */
     public function __construct(string $kind, array $options = [])
     {
-        parent::__construct($kind, 'jabber:iq:client');
+        parent::__construct($kind, 'jabber:client');
 
         $this->regenerateId($this->localName);
         $this->applyOptions($options);

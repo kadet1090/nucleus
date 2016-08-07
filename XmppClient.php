@@ -19,6 +19,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Module\Binding;
 use Kadet\Xmpp\Module\ClientModuleInterface;
 use Kadet\Xmpp\Module\SaslAuthenticator;
 use Kadet\Xmpp\Module\StartTls;
@@ -86,7 +87,8 @@ class XmppClient extends XmlStream implements ContainerInterface
             'parser'  => new XmlParser(new XmlElementFactory()),
             'lang'    => 'en',
             'modules' => [
-                new StartTls()
+                new StartTls(),
+                new Binding()
             ]
         ], $options);
 
@@ -151,6 +153,13 @@ class XmppClient extends XmlStream implements ContainerInterface
     public function getJid()
     {
         return $this->_jid;
+    }
+
+    public function bind($jid)
+    {
+        $this->_jid = new Jid($jid);
+
+        $this->emit('bind', [ $jid ]);
     }
 
     private function handleConnect($stream)
