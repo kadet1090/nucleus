@@ -55,8 +55,8 @@ class XPathQuery
 
     /**
      * Hack for supporting XPath outside of standard XML implementation.
-     * Why? Becuase simplexml sucks so much.
-     * DOM suck even more, and I'm better with writing one hack for xpath
+     * Why? Because simplexml sucks so much.
+     * DOM sucks even more, and I'm better with writing one hack for xpath
      * than with writing hack for almost everyfuckingthing™.
      *
      * @param $path

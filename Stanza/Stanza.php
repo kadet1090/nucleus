@@ -42,10 +42,11 @@ class Stanza extends XmlElement
      *     @var string $id      Unique id, will be generated if omitted
      *     @var string $type    Stanza type
      * }
+     * @param mixed    $content Content to append
      */
-    public function __construct(string $kind, array $options = [])
+    public function __construct(string $kind, array $options = [], $content = null)
     {
-        parent::__construct($kind, 'jabber:client');
+        parent::__construct($kind, 'jabber:client', $content);
 
         $this->regenerateId($this->localName);
         $this->applyOptions($options);

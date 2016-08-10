@@ -18,6 +18,7 @@ namespace Kadet\Xmpp\Stream;
 use Kadet\Xmpp\Stream\Features\StartTls;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Xml\XmlStream;
 
 /**
  * Class Features
@@ -29,6 +30,16 @@ use Kadet\Xmpp\Xml\XmlElement;
 class Features extends XmlElement
 {
     use Accessors;
+
+    /**
+     * XmlElement constructor
+     *
+     * @param array $features
+     */
+    public function __construct(array $features = [])
+    {
+        parent::__construct('stream:features', XmlStream::NAMESPACE_URI, $features);
+    }
 
     /**
      * @return false|StartTls

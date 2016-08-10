@@ -294,11 +294,18 @@ class XmlElement implements ContainerInterface
             return false;
         }
 
+        if(is_array($element)) {
+            array_walk($element, [$this, 'append']);
+            return $element;
+        }
+
         if (!is_string($element) && !$element instanceof XmlElement) {
-            throw new InvalidArgumentException(helper\format('$element should be either string or object of {class} class, {type} given', [
-                'class' => XmlElement::class,
-                'type'  => helper\typeof($element)
-            ]));
+            throw new InvalidArgumentException(helper\format(
+                '$element should be either string or object of {class} class. or array of given types, {type} given', [
+                    'class' => XmlElement::class,
+                    'type'  => helper\typeof($element)
+                ]
+            ));
         }
 
         if ($element instanceof XmlElement) {

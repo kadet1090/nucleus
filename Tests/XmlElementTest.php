@@ -161,7 +161,7 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
     public function testAddingInvalidContent()
     {
         $parent = new XmlElement('parent');
-        $parent->append([]);
+        $parent->append(NAN);
     }
 
     public function testXmlOutputWithEmptyChild()

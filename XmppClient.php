@@ -184,7 +184,7 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->_connector = $connector;
         } else {
             throw new InvalidArgumentException(sprintf(
-                '$connector must be either %s, or %s instance %s given.',
+                '$connector must be either %s or %s instance, %s given.',
                 LoopInterface::class, Connector::class, \Kadet\Xmpp\Utils\helper\typeof($connector)
             ));
         }
@@ -194,7 +194,7 @@ class XmppClient extends XmlStream implements ContainerInterface
         });
     }
 
-    protected function register(ClientModuleInterface $module, $alias = true)
+    public function register(ClientModuleInterface $module, $alias = true)
     {
         $module->setClient($this);
         if ($alias === true) {
@@ -214,7 +214,7 @@ class XmppClient extends XmlStream implements ContainerInterface
         return $this->_container;
     }
 
-    protected function getFeatures()
+    public function getFeatures()
     {
         return $this->_features;
     }
