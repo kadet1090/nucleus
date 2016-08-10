@@ -25,7 +25,7 @@ class DnsResolverTest extends \PHPUnit_Framework_TestCase
 
     public function testResolving()
     {
-        $mock = $this->getFunctionMock(dirname(DnsResolver::class), 'dns_get_record');
+        $mock = $this->getFunctionMock(substr(DnsResolver::class, 0, strrpos(DnsResolver::class, '\\')), 'dns_get_record');
         $mock->expects($this->exactly(2))->withConsecutive(['foo.tld', DNS_A], ['bar.tld', DNS_SRV])->willReturn([
             [
                 'target' => '8.8.8.8',
