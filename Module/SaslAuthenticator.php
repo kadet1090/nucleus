@@ -60,47 +60,54 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         if (!empty($features->mechanisms)) {
             $sasl = new Sasl();
             foreach ($features->mechanisms as $name) {
-                try {
-                    $mechanism = $sasl->factory($name, [
-                        'authcid'  => $this->_client->jid->local,
-                        'secret'   => $this->_password,
-                        'hostname' => $this->_client->jid->domain,
-                        'service'  => 'xmpp'
-                    ]);
-
-                    $this->_client->getLogger()->debug('Starting auth using {name} mechanism.', ['name' => $name]);
-
-                    $auth = new XmlElement('auth', self::XMLNS);
-                    $auth->setAttribute('mechanism', $name);
-                    if ($mechanism instanceof ChallengeAuthenticationInterface) {
-                        try {
-                            $response = base64_encode($mechanism->createResponse());
-                        } catch (InvalidArgumentException $e) {
-                            $response = '=';
-                        }
-
-                        $auth->append($response);
-
-                        $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
-                            $this->handleChallenge($challenge, $mechanism);
-                        }, with\all(with\tag('challenge'), with\xmlns(self::XMLNS)));
-
-                        $this->_client->once('element', function (XmlElement $result) use ($callback) {
-                            $this->_client->removeListener('element', $callback);
-                            $this->handleAuthResult($result, $callback);
-                        }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
-                    } else {
-                        $auth->append(base64_encode($mechanism->createResponse()));
-                    }
-                    $this->_client->write($auth);
-
+                if($this->tryMechanism($sasl, $name)) {
                     return false;
-                } catch (InvalidArgumentException $e) {
                 }
             }
         }
 
         return true;
+    }
+
+    private function tryMechanism(Sasl $sasl, $name) {
+        try {
+            $mechanism = $sasl->factory($name, [
+                'authcid'  => $this->_client->jid->local,
+                'secret'   => $this->_password,
+                'hostname' => $this->_client->jid->domain,
+                'service'  => 'xmpp'
+            ]);
+
+            $this->_client->getLogger()->debug('Starting auth using {name} mechanism.', ['name' => $name]);
+
+            $auth = new XmlElement('auth', self::XMLNS);
+            $auth->setAttribute('mechanism', $name);
+            if ($mechanism instanceof ChallengeAuthenticationInterface) {
+                try {
+                    $response = base64_encode($mechanism->createResponse());
+                } catch (InvalidArgumentException $e) {
+                    $response = '=';
+                }
+
+                $auth->append($response);
+
+                $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
+                    $this->handleChallenge($challenge, $mechanism);
+                }, with\all(with\tag('challenge'), with\xmlns(self::XMLNS)));
+
+                $this->_client->once('element', function (XmlElement $result) use ($callback) {
+                    $this->_client->removeListener('element', $callback);
+                    $this->handleAuthResult($result, $callback);
+                }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
+            } else {
+                $auth->append(base64_encode($mechanism->createResponse()));
+            }
+            $this->_client->write($auth);
+
+            return true;
+        } catch (InvalidArgumentException $e) {
+            return false;
+        }
     }
 
     private function handleChallenge(XmlElement $challenge, AuthenticationInterface $mechanism)
