@@ -29,24 +29,25 @@ class ConnectorStub implements Connector
     use Logging, BetterEmitter;
 
     private $_loop;
+    private $_stream;
 
     /**
      * ConnectorStub constructor.
+     * @param DuplexStreamInterface $stream Stream returned in connect
      */
-    public function __construct()
+    public function __construct(DuplexStreamInterface $stream = null)
     {
         $this->_loop = Factory::create();
+        $this->_stream = $stream ?: new CompositeStream(
+            new ThroughStream(),
+            new ThroughStream()
+        );
     }
 
     public function connect(array $options = []) : DuplexStreamInterface
     {
-        $stream = new CompositeStream(
-            new ThroughStream(),
-            new ThroughStream()
-        );
-
-        $this->emit('connect', [$stream]);
-        return $stream;
+        $this->emit('connect', [ $this->_stream ]);
+        return $this->_stream;
     }
 
     public function getLoop()

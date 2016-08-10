@@ -99,11 +99,15 @@ class XmlElement implements ContainerInterface
      * @param string $name    Element name, including prefix if needed
      * @param string $uri     Namespace URI of element
      * @param mixed  $content Content of element
+     * @param array  $attributes
      */
-    public function __construct(string $name, string $uri = null, $content = null)
+    public function __construct(string $name, string $uri = null, $content = null, array $attributes = [])
     {
         $this->init($name, $uri);
         $this->append($content);
+        foreach($attributes as $name => $value) {
+            $this->setAttribute($name, $value);
+        }
     }
 
     /**

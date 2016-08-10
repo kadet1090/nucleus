@@ -60,7 +60,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         parent::setClient($client);
 
         $client->on('features', function (Features $features) {
-            return $this->auth($features);
+            return !$this->auth($features);
         });
     }
 
@@ -69,12 +69,12 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         if (!empty($features->mechanisms)) {
             foreach ($features->mechanisms as $name) {
                 if($this->tryMechanism($name)) {
-                    return false;
+                    return true;
                 }
             }
         }
 
-        return true;
+        return false;
     }
 
     private function tryMechanism($name) {

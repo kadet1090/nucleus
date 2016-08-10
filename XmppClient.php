@@ -105,8 +105,8 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->register(new SaslAuthenticator($options['password']));
         }
 
-        foreach ($options['modules'] as $module) {
-            $this->register($module);
+        foreach ($options['modules'] as $name => $module) {
+            $this->register($module, is_string($name) ? $name : true);
         }
 
         $this->_connector->on('connect', function (...$arguments) {
@@ -198,8 +198,9 @@ class XmppClient extends XmlStream implements ContainerInterface
     {
         $module->setClient($this);
         if ($alias === true) {
-            $parents = array_merge(class_implements($module), array_slice(class_parents($module), 1));
-            foreach ($parents as $alias) {
+            $this->_container->set(get_class($module), $module);
+            $aliases = array_merge(class_implements($module), array_slice(class_parents($module), 1));
+            foreach ($aliases as $alias) {
                 if (!$this->has($alias)) {
                     $this->_container->set($alias, $module);
                 }
