@@ -83,10 +83,11 @@ class XmppClient extends XmlStream implements ContainerInterface
      */
     public function __construct(Jid $jid, array $options = [])
     {
-        $options = array_merge_recursive([
+        $options = array_replace([
             'parser'  => new XmlParser(new XmlElementFactory()),
             'lang'    => 'en',
-            'modules' => [
+            'modules' => [],
+            'default-modules' => [
                 new StartTls(),
                 new Binding()
             ]
@@ -105,7 +106,7 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->register(new SaslAuthenticator($options['password']));
         }
 
-        foreach ($options['modules'] as $name => $module) {
+        foreach (array_merge($options['default-modules'], $options['modules']) as $name => $module) {
             $this->register($module, is_string($name) ? $name : true);
         }
 

@@ -51,7 +51,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
      */
     public function __construct($password, Sasl $sasl = null)
     {
-        $this->_password = $password;
+        $this->setPassword($password);
         $this->_sasl = $sasl ?: new Sasl();
     }
 
