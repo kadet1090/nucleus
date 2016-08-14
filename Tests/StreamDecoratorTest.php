@@ -1,8 +1,8 @@
 <?php
 /**
- * XMPP Library
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *
@@ -19,6 +19,12 @@ use Kadet\Xmpp\Utils\StreamDecorator;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\ThroughStream;
 
+/**
+ * Class StreamDecoratorTest
+ * @package Kadet\Xmpp\Tests
+ *
+ * @covers \Kadet\Xmpp\Utils\StreamDecorator
+ */
 class StreamDecoratorTest extends \PHPUnit_Framework_TestCase
 {
     public function eventProvider()
@@ -119,6 +125,14 @@ class StreamDecoratorTest extends \PHPUnit_Framework_TestCase
         $decorated->expects($this->once())->method($method)->with(...$arguments);
 
         $this->getStreamMock($decorated)->$method(...$arguments);
+    }
+
+    public function testObtainingDecoratedStream()
+    {
+        $decorated = $this->createMock(ThroughStream::class);
+        $decorator = $this->getStreamMock($decorated);
+
+        $this->assertSame($decorated, $decorator->getDecorated());
     }
 
     /**

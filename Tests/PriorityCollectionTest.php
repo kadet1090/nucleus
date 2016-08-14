@@ -1,8 +1,8 @@
 <?php
 /**
- * XMPP Library
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *
@@ -17,6 +17,12 @@ namespace Kadet\Xmpp\Tests;
 
 use Kadet\Xmpp\Utils\PriorityCollection;
 
+/**
+ * Class PriorityCollectionTest
+ * @package Kadet\Xmpp\Tests
+ *
+ * @covers Kadet\Xmpp\Utils\PriorityCollection
+ */
 class PriorityCollectionTest extends \PHPUnit_Framework_TestCase
 {
     public function testPriorities()

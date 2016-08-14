@@ -1,8 +1,8 @@
 <?php
 /**
- * XMPP Library
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *
@@ -24,11 +24,11 @@ use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 
+/**
+ * @covers Kadet\Xmpp\Module\Binding
+ */
 class BindingTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @covers Kadet\Xmpp\Module\Binding
-     */
     public function testBindingInitiationWithResource()
     {
         $features = new Features([
@@ -54,9 +54,6 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         $this->handleResponse($client, $id, 'resource');
     }
 
-    /**
-     * @covers Kadet\Xmpp\Module\Binding
-     */
     public function testFeaturesWithoutBinding()
     {
         $features = new Features();
@@ -68,9 +65,6 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         $client->emit('features', [$features]);
     }
 
-    /**
-     * @covers Kadet\Xmpp\Module\Binding
-     */
     public function testBindingInitiationWithoutResource()
     {
         $features = new Features([
@@ -95,10 +89,6 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         $this->handleResponse($client, $id);
     }
 
-    /**
-     * @param XmppClient|\PHPUnit_Framework_MockObject_MockObject $client
-     * @param string     $resource
-     */
     public function handleResponse(XmppClient $client, $id, $resource = 'generated')
     {
         $jid = "local@domain.tld/$resource";
@@ -112,10 +102,6 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         $client->emit('element', [ $result ]);
     }
 
-    /**
-     * @param $jid
-     * @return XmppClient|\PHPUnit_Framework_MockObject_MockObject
-     */
     public function getMockClient($jid)
     {
         /** @var XmppClient $client */

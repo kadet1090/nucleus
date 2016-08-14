@@ -1,8 +1,8 @@
 <?php
 /**
- * Highlighter
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *

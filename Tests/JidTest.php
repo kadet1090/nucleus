@@ -1,8 +1,8 @@
 <?php
 /**
- * XMPP Library
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *
@@ -18,6 +18,9 @@ namespace Kadet\Xmpp\Tests;
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 
+/**
+ * @covers Kadet\Xmpp\Jid
+ */
 class JidTest extends \PHPUnit_Framework_TestCase
 {
     public function validJidProvider()

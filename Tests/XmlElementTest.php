@@ -1,8 +1,8 @@
 <?php
 /**
- * XMPP Library
+ * Nucleus - XMPP Library for PHP
  *
- * Copyright (C) 2016, Some right reserved.
+ * Copyright (C) 2016, Some rights reserved.
  *
  * @author Kacper "Kadet" Donat <kacper@kadet.net>
  *
@@ -19,6 +19,12 @@ use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XPathQuery;
 
+/**
+ * Class XmlElementTest
+ * @package Kadet\Xmpp\Tests
+ *
+ * @covers \Kadet\Xmpp\Xml\XmlElement
+ */
 class XmlElementTest extends \PHPUnit_Framework_TestCase
 {
     const XMLNS = 'urn:some:xmlns';
