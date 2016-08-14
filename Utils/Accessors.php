@@ -29,7 +29,7 @@ trait Accessors
         if (method_exists($this, $getter)) {
             return $this->$getter();
         } elseif (method_exists($this, 'set' . ucfirst($property))) {
-            throw new WriteOnlyException("Property \$$property is write-only, which is rather strange.");
+            throw new WriteOnlyException("Property \$$property is write-only, which is rather strange. Maybe you should write custom getter with proper explanation?");
         } else {
             return $this->_get($property);
         }

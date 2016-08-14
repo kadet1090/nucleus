@@ -56,3 +56,12 @@ function format($string, array $arguments = [])
 {
     return str_replace(array_map(function ($e) { return "{{$e}}"; }, array_keys($arguments)), $arguments, $string);
 }
+
+function rearrange(array $array, array $keys) : array
+{
+    uksort($array, function($a, $b) use($keys) {
+        return ($keys[$b] ?? 0) <=> ($keys[$a] ?? 0);
+    });
+
+    return $array;
+}

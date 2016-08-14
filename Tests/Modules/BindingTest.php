@@ -13,7 +13,7 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Tests;
+namespace Kadet\Xmpp\Tests\Modules;
 
 
 use Kadet\Xmpp\Jid;

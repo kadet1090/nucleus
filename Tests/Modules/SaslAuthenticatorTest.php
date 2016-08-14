@@ -13,7 +13,7 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Tests;
+namespace Kadet\Xmpp\Tests\Modules;
 
 
 use Fabiang\Sasl\Authentication\AuthenticationInterface;
@@ -180,7 +180,7 @@ class SaslAuthenticatorTest extends \PHPUnit_Framework_TestCase
         return $this->getMockBuilder(XmppClient::class)
             ->setConstructorArgs([new Jid('local@domain.tld'), [
                 'connector' => new ConnectorStub(),
-                'default-modules' => []
+                'default-modules' => false
             ]])->setMethods(['write', 'bind', 'restart'])
             ->getMock();
     }

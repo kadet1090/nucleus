@@ -22,14 +22,14 @@ use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 
-class StartTls extends ClientModule
+class TlsEnabler extends ClientModule
 {
     public function setClient(XmppClient $client)
     {
         parent::setClient($client);
 
         $client->on('features', function (Features $features) {
-            return $this->handleFeatures($features);
+            return !$this->startTls($features);
         }, null, 10);
 
         $client->on('element', function (XmlElement $element) {
@@ -37,13 +37,13 @@ class StartTls extends ClientModule
         }, with\xmlns(Features\StartTls::XMLNS));
     }
 
-    protected function handleFeatures(Features $features)
+    public function startTls(Features $features)
     {
         if ($features->startTls) {
             if ($this->_client->getDecorated() instanceof SecureStream) {
                 $this->_client->write(new Features\StartTls());
 
-                return false; // Stop processing
+                return true; // Stop processing
             } elseif ($features->startTls->required) {
                 throw new TlsException('Encryption is not available, but server requires it.');
             } else {
@@ -51,7 +51,7 @@ class StartTls extends ClientModule
             }
         }
 
-        return true;
+        return false;
     }
 
     private function handleTls(XmlElement $response)

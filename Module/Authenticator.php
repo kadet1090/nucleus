@@ -19,6 +19,6 @@ use Kadet\Xmpp\Stream\Features;
 
 interface Authenticator extends ClientModuleInterface
 {
-    public function setPassword(string $password);
+    public function setPassword(string $password = null);
     public function auth(Features $features);
 }

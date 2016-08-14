@@ -49,7 +49,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
      * @param string $password Client's password
      * @param Sasl   $sasl     Factory used to create mechanisms
      */
-    public function __construct($password, Sasl $sasl = null)
+    public function __construct($password = null, Sasl $sasl = null)
     {
         $this->setPassword($password);
         $this->_sasl = $sasl ?: new Sasl();
@@ -151,7 +151,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         $this->_client->restart();
     }
 
-    public function setPassword(string $password)
+    public function setPassword(string $password = null)
     {
         $this->_password = $password;
     }

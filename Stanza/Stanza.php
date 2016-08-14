@@ -135,6 +135,4 @@ class Stanza extends XmlElement
         parent::init($name, $uri);
         $this->regenerateId();
     }
-
-
 }

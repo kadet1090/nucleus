@@ -19,10 +19,12 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Module\Authenticator;
 use Kadet\Xmpp\Module\Binding;
+use Kadet\Xmpp\Module\ClientModule;
 use Kadet\Xmpp\Module\ClientModuleInterface;
 use Kadet\Xmpp\Module\SaslAuthenticator;
-use Kadet\Xmpp\Module\StartTls;
+use Kadet\Xmpp\Module\TlsEnabler;
 use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
@@ -37,9 +39,12 @@ use React\EventLoop\LoopInterface;
  * Class XmppClient
  * @package Kadet\Xmpp
  *
- * @property-read Jid        $jid      Client's jid (Jabber Identifier) address.
- * @property-read Features   $features Features provided by that stream
- * @property-write Connector $connector
+ * @property-read Jid                $jid       Client's jid (Jabber Identifier) address.
+ * @property-read Features           $features  Features provided by that stream
+ * @property-read ContainerInterface $container Dependency container used for module management.
+ * @property-read string             $language  Stream language (reflects xml:language attribute)
+ *
+ * @property-write Connector         $connector
  */
 class XmppClient extends XmlStream implements ContainerInterface
 {
@@ -78,37 +83,32 @@ class XmppClient extends XmlStream implements ContainerInterface
 
     /**
      * XmppClient constructor.
-     * @param Jid   $jid
-     * @param array $options
+     * @param Jid              $jid
+     * @param array            $options {
+     *     @var XmlParser          $parser          Parser used for interpreting streams.
+     *     @var ClientModule[]     $modules         Additional modules registered when creating client.
+     *     @var string             $language        Stream language (reflects xml:language attribute)
+     *     @var ContainerInterface $container       Dependency container used for module management.
+     *     @var bool               $default-modules Load default modules or not
+     * }
      */
     public function __construct(Jid $jid, array $options = [])
     {
         $options = array_replace([
-            'parser'  => new XmlParser(new XmlElementFactory()),
-            'lang'    => 'en',
-            'modules' => [],
-            'default-modules' => [
-                new StartTls(),
-                new Binding()
-            ]
+            'parser'    => new XmlParser(new XmlElementFactory()),
+            'language'  => 'en',
+            'container' => ContainerBuilder::buildDevContainer(),
+            'connector' => $options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']),
+
+            'modules'         => [],
+            'default-modules' => true,
         ], $options);
+        $options['jid'] = $jid;
 
         parent::__construct($options['parser'], null);
-
         $this->_parser->factory->load(require __DIR__ . '/XmlElementLookup.php');
 
-        $this->_lang      = $options['lang'];
-        $this->_container = ContainerBuilder::buildDevContainer();
-        $this->_jid       = $jid;
-        $this->connector  = $options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']);
-
-        if (isset($options['password'])) {
-            $this->register(new SaslAuthenticator($options['password']));
-        }
-
-        foreach (array_merge($options['default-modules'], $options['modules']) as $name => $module) {
-            $this->register($module, is_string($name) ? $name : true);
-        }
+        $this->applyOptions($options);
 
         $this->_connector->on('connect', function (...$arguments) {
             return $this->emit('connect', $arguments);
@@ -120,6 +120,30 @@ class XmppClient extends XmlStream implements ContainerInterface
         }, Features::class);
 
         $this->connect();
+    }
+
+    public function applyOptions(array $options)
+    {
+        unset($options['parser']); // don't need that
+        $options = \Kadet\Xmpp\Utils\helper\rearrange($options, [
+            'container' => 6,
+            'jid'       => 5,
+            'connector' => 4,
+            'modules'   => 3,
+            'password'  => -1
+        ]);
+
+        if($options['default-modules']) {
+            $options['modules'] = array_merge([
+                TlsEnabler::class    => new TlsEnabler(),
+                Binding::class       => new Binding(),
+                Authenticator::class => new SaslAuthenticator()
+            ], $options['modules']);
+        }
+
+        foreach ($options as $name => $value) {
+            $this->$name = $value;
+        }
     }
 
     public function start(array $attributes = [])
@@ -156,11 +180,15 @@ class XmppClient extends XmlStream implements ContainerInterface
         return $this->_jid;
     }
 
+    protected function setJid(Jid $jid)
+    {
+        $this->_jid = $jid;
+    }
+
     public function bind($jid)
     {
-        $this->_jid = new Jid($jid);
-
-        $this->emit('bind', [ $jid ]);
+        $this->jid = new Jid($jid);
+        $this->emit('bind', [$jid]);
     }
 
     private function handleConnect($stream)
@@ -214,6 +242,32 @@ class XmppClient extends XmlStream implements ContainerInterface
     protected function getContainer() : ContainerInterface
     {
         return $this->_container;
+    }
+
+    protected function setContainer(Container $container)
+    {
+        $this->_container = $container;
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->_lang;
+    }
+
+    public function setLanguage(string $language)
+    {
+        $this->_lang = $language;
+    }
+
+    public function setPassword(string $password)
+    {
+        $this->get(Authenticator::class)->setPassword($password);
+    }
+
+    public function setModules(array $modules) {
+        foreach ($modules as $name => $module) {
+            $this->register($module, is_string($name) ? $name : true);
+        }
     }
 
     public function getFeatures()
