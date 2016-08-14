@@ -1,6 +1,6 @@
 ![Nucleus Logo](https://dl.dropboxusercontent.com/u/60020102/ShareX/2016-07/nucleus_Logo%20%2B%20Logotyp%20-%20Color.png)
 # [WiP] Nucleus - XMPP Library for PHP
-[![Packagist](https://img.shields.io/packagist/v/kade1090/nucleus.svg?maxAge=2592000?style=flat-square)](https://packagist.org/packages/kadet/nucleus)
+[![Packagist](https://img.shields.io/packagist/v/kadet/nucleus.svg?maxAge=2592000?style=flat-square)](https://packagist.org/packages/kadet/nucleus)
 ![Milestone](https://img.shields.io/badge/milestone-1-yellow.svg)
 [![Travis](https://img.shields.io/travis/kadet1090/nucleus.svg?maxAge=2592000?style=flat-square)](https://travis-ci.org/kadet1090/nucleus)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/kadet1090/nucleus.svg?maxAge=2592000?style=flat-square)](https://scrutinizer-ci.com/g/kadet1090/nucleus/?branch=master)

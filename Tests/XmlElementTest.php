@@ -59,12 +59,29 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($element->attributes);
     }
 
+    public function testCreation()
+    {
+        $element = new XmlElement('tag', self::XMLNS, 'content', ['attr' => 'value']);
+
+        $this->assertEquals('tag', $element->localName);
+        $this->assertEquals(self::XMLNS, $element->namespace);
+
+        $this->assertTrue($element->hasAttribute('attr'));
+        $this->assertEquals('value', $element->getAttribute('attr'));
+        $this->assertEquals(['attr' => 'value'], $element->attributes);
+
+        $this->assertEquals('content', $element->innerXml);
+        $this->assertEquals(['content'], $element->children);
+    }
+
     public function testArgumentsAdding()
     {
         $element = new XmlElement('tag');
         $element->setAttribute('attr', 'value');
+        $element->setAttribute('nope', null);
 
         $this->assertTrue($element->hasAttribute('attr'));
+        $this->assertFalse($element->hasAttribute('nope'));
 
         $this->assertEquals('value', $element->getAttribute('attr'));
         $this->assertEquals(['attr' => 'value'], $element->attributes);
@@ -110,6 +127,19 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($parent, $child->parent);
         $this->assertEquals([ $child ], $parent->children);
+    }
+
+    public function testAddingChildren()
+    {
+        $parent = new XmlElement('parent');
+        $foo = new XmlElement('foo');
+        $bar = new XmlElement('bar');
+
+        $parent->append([ $foo, $bar ]);
+
+        $this->assertEquals($parent, $foo->parent);
+        $this->assertEquals($parent, $bar->parent);
+        $this->assertEquals([ $foo, $bar ], $parent->children);
     }
 
     public function testAddingChildWithNamespace()
@@ -232,6 +262,17 @@ XML;
 
         $this->assertEquals($foo, $parent->get(function (XmlElement $e) { return $e->localName === 'foo'; }));
         $this->assertFalse($parent->get(function (XmlElement $e) { return false; }));
+    }
+
+    public function testElementExistence()
+    {
+        $parent = new XmlElement('parent');
+        $parent->append($foo = new XmlElement('foo'));
+        $parent->append($foobar = new XmlElement('foobar'));
+        $parent->append($bar = new XmlElement('bar', 'urn:bar'));
+
+        $this->assertTrue($parent->has(function (XmlElement $e) { return $e->localName === 'foo'; }));
+        $this->assertFalse($parent->has(function (XmlElement $e) { return $e->localName === 'kek'; }));
     }
 
     public function testQuery()

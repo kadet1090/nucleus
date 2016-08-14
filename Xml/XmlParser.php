@@ -111,7 +111,11 @@ class XmlParser implements BetterEmitterInterface
             return 'http://www.w3.org/2000/xmlns/';
         }
 
-        return isset($namespaces[$prefix]) ? $namespaces[$prefix] : end($this->_stack)->lookupUri($prefix);
+        if (isset($namespaces[ $prefix ])) {
+            return $namespaces[ $prefix ];
+        }
+
+        return !empty($this->_stack) ? end($this->_stack)->lookupUri($prefix) : null;
     }
 
     private function _element($name, $attrs)
