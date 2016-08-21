@@ -18,41 +18,21 @@ namespace Kadet\Xmpp\Tests\Modules;
 
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Module\Binding;
+use Kadet\Xmpp\Stanza\Error;
 use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
+use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**
  * @covers Kadet\Xmpp\Module\Binding
  */
 class BindingTest extends \PHPUnit_Framework_TestCase
 {
-    public function testBindingInitiationWithResource()
-    {
-        $features = new Features([
-            new XmlElement('bind', 'urn:ietf:params:xml:ns:xmpp-bind')
-        ]);
-
-        $client = $this->getMockClient('local@domain.tld/resource');
-        $client->expects($this->once())->method('write')->with($this->callback(function (Stanza $element) use (&$id) {
-            $id = $element->id;
-
-            $this->assertEquals('jabber:client', $element->namespace);
-            $this->assertEquals('iq', $element->name);
-            $this->assertEquals('set', $element->getAttribute('type'));
-            $this->assertTrue($element->has(\Kadet\Xmpp\Utils\filter\element('bind', 'urn:ietf:params:xml:ns:xmpp-bind')));
-            $bind = $element->element('bind', 'urn:ietf:params:xml:ns:xmpp-bind');
-            $this->assertTrue($bind->has(\Kadet\Xmpp\Utils\filter\tag('resource')));
-            $this->assertEquals('resource', $bind->element('resource')->innerXml);
-
-            return true;
-        }));
-        $client->emit('features', [$features]);
-
-        $this->handleResponse($client, $id, 'resource');
-    }
+    /** @var XmppClient|Mock */
+    private $_client;
 
     public function testFeaturesWithoutBinding()
     {
@@ -65,14 +45,14 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         $client->emit('features', [$features]);
     }
 
-    public function testBindingInitiationWithoutResource()
+    public function binding($resource = null)
     {
         $features = new Features([
             new XmlElement('bind', 'urn:ietf:params:xml:ns:xmpp-bind')
         ]);
 
-        $client = $this->getMockClient('local@domain.tld');
-        $client->expects($this->once())->method('write')->with($this->callback(function (Stanza $element) use (&$id) {
+        $this->_client = $this->getMockClient('local@domain.tld' . ($resource ? '/'.$resource : null));
+        $this->_client->expects($this->once())->method('write')->with($this->callback(function (Stanza $element) use (&$id, $resource) {
             $id = $element->id;
 
             $this->assertEquals('jabber:client', $element->namespace);
@@ -80,28 +60,71 @@ class BindingTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('set', $element->getAttribute('type'));
             $this->assertTrue($element->has(\Kadet\Xmpp\Utils\filter\element('bind', 'urn:ietf:params:xml:ns:xmpp-bind')));
             $bind = $element->element('bind', 'urn:ietf:params:xml:ns:xmpp-bind');
-            $this->assertFalse($bind->has(\Kadet\Xmpp\Utils\filter\tag('resource')));
+
+            if($resource) {
+                $this->assertTrue($bind->has(\Kadet\Xmpp\Utils\filter\tag('resource')));
+                $this->assertEquals('resource', $bind->element('resource')->innerXml);
+            }
 
             return true;
         }));
-        $client->emit('features', [$features]);
+        $this->_client->emit('features', [$features]);
 
-        $this->handleResponse($client, $id);
+        return $id;
     }
 
-    public function handleResponse(XmppClient $client, $id, $resource = 'generated')
+    public function testBindingInitiationWithoutResourceSuccess()
+    {
+        $this->success($this->binding());
+    }
+
+    public function testBindingInitiationWithResourceSuccess()
+    {
+        $this->success($this->binding('resource'), 'resource');
+    }
+
+    /**
+     * @expectedException \Kadet\Xmpp\Exception\Protocol\BindingException
+     * @expectedExceptionMessageRegExp /Bad Request:/i
+     */
+    public function testBindingInitiationWithoutResourceFailure()
+    {
+        $this->failure($this->binding(), new Error('bad-request'));
+    }
+
+    /**
+     * @expectedException \Kadet\Xmpp\Exception\Protocol\BindingException
+     * @expectedExceptionMessageRegExp /Conflict:/i
+     */
+    public function testBindingInitiationWithResourceFailure()
+    {
+        $this->failure($this->binding('resource'), new Error('conflict'));
+    }
+
+    public function success($id, $resource = 'generated')
     {
         $jid = "local@domain.tld/$resource";
-        $result = new Stanza('iq', ['type' => 'result', 'id' => $id], [
-            new XmlElement('bind', 'urn:ietf:params:xml:ns:xmpp-bind', [
-                new XmlElement('jid', null, $jid)
+        $result = new Stanza('iq', [
+            'attributes' => ['type' => 'result', 'id' => $id],
+            'content'    => new XmlElement('bind', 'urn:ietf:params:xml:ns:xmpp-bind', [
+                'content' => new XmlElement('jid', null, ['content' => $jid])
             ])
         ]);
 
-        $client->expects($this->once())->method('bind')->with($jid);
-        $client->emit('element', [ $result ]);
+        $this->_client->expects($this->once())->method('bind')->with($jid);
+        $this->_client->emit('element', [ $result ]);
     }
 
+    public function failure($id, Error $error)
+    {
+        $result = new Stanza('iq', ['attributes' => ['type' => 'error', 'id' => $id], 'content' => $error]);
+        $this->_client->emit('element', [ $result ]);
+    }
+
+    /**
+     * @param $jid
+     * @return XmppClient|Mock
+     */
     public function getMockClient($jid)
     {
         /** @var XmppClient $client */

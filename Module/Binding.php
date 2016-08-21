@@ -16,6 +16,7 @@
 namespace Kadet\Xmpp\Module;
 
 
+use Kadet\Xmpp\Exception\Protocol\BindingException;
 use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Xml\XmlElement;
@@ -38,11 +39,11 @@ class Binding extends ClientModule
     public function bind(Features $features)
     {
         if($features->has(\Kadet\Xmpp\Utils\filter\element('bind', self::XMLNS))) {
-            $stanza = new Stanza('iq', ['type' => 'set']);
+            $stanza = new Stanza('iq', ['attributes' => ['type' => 'set']]);
             $bind = $stanza->append(new XmlElement('bind', self::XMLNS));
 
             if(!$this->_client->jid->isBare()) {
-                $bind->append(new XmlElement('resource', null, $this->_client->jid->resource));
+                $bind->append(new XmlElement('resource', null, ['content' => $this->_client->jid->resource]));
             }
 
             $this->_client->once('element', function(Stanza $element) {
@@ -58,8 +59,10 @@ class Binding extends ClientModule
 
     public function handleResult(Stanza $stanza)
     {
-        if($stanza->type === 'result') {
-            $this->_client->bind($stanza->element('bind', self::XMLNS)->element('jid')->innerXml);
+        if($stanza->type === 'error') {
+            throw BindingException::fromError($this->_client->jid, $stanza->error);
         }
+
+        $this->_client->bind($stanza->element('bind', self::XMLNS)->element('jid')->innerXml);
     }
 }

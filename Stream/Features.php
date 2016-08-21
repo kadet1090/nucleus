@@ -38,7 +38,7 @@ class Features extends XmlElement
      */
     public function __construct(array $features = [])
     {
-        parent::__construct('stream:features', XmlStream::NAMESPACE_URI, $features);
+        parent::__construct('stream:features', XmlStream::NAMESPACE_URI, [ 'content' => $features ]);
     }
 
     /**

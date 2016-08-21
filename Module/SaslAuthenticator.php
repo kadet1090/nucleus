@@ -143,6 +143,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
     private function handleAuthResult(XmlElement $result)
     {
+        // todo: handle different scenarios
         if ($result->localName === 'failure') {
             throw new AuthenticationException('Unable to auth. '.trim($result->innerXml));
         }

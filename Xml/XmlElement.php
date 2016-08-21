@@ -99,16 +99,16 @@ class XmlElement implements ContainerInterface
      *
      * @param string $name    Element name, including prefix if needed
      * @param string $uri     Namespace URI of element
-     * @param mixed  $content Content of element
-     * @param array  $attributes
+     * @param array  $options {
+     *     @var mixed  $content    Content of element
+     *     @var array  $attributes Element attributes
+     * }
      */
-    public function __construct(string $name, string $uri = null, $content = null, array $attributes = [])
+    public function __construct(string $name, string $uri = null, array $options = [])
     {
         $this->init($name, $uri);
-        $this->innerXml = $content;
-        foreach($attributes as $name => $value) {
-            $this->setAttribute($name, $value);
-        }
+
+        $this->applyOptions($options);
     }
 
     /**
@@ -150,6 +150,17 @@ class XmlElement implements ContainerInterface
     {
         $this->_children = [];
 
+        $this->append($value);
+    }
+
+    public function getContent()
+    {
+        return $this->children;
+    }
+
+    public function setContent($value)
+    {
+        $this->_children = [];
         $this->append($value);
     }
 
@@ -385,6 +396,15 @@ class XmlElement implements ContainerInterface
     public function getAttributes()
     {
         return $this->_attributes;
+    }
+
+    protected function setAttributes(array $attributes)
+    {
+        $this->_attributes = [];
+
+        foreach ($attributes as $attribute => $value) {
+            $this->setAttribute($attribute, $value);
+        }
     }
 
     /**

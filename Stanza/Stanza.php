@@ -18,17 +18,19 @@ namespace Kadet\Xmpp\Stanza;
 
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Xml\XmlFactoryCollocations;
 
 /**
  * Class Stanza
  * @package Kadet\Xmpp\Stanza
  *
- * @property Jid|null $from Jid representing "from" stanza attribute
- * @property Jid|null $to   Jid representing "to" stanza attribute
- * @property string   $type Stanza type
- * @property string   $id   Unique stanza id
+ * @property Jid|null $from  Jid representing "from" stanza attribute
+ * @property Jid|null $to    Jid representing "to" stanza attribute
+ * @property string   $type  Stanza type
+ * @property string   $id    Unique stanza id
+ * @property Error    $error Error details
  */
-class Stanza extends XmlElement
+class Stanza extends XmlElement implements XmlFactoryCollocations
 {
     private $_from = false;
     private $_to   = false;
@@ -42,14 +44,11 @@ class Stanza extends XmlElement
      *     @var string $id      Unique id, will be generated if omitted
      *     @var string $type    Stanza type
      * }
-     * @param mixed    $content Content to append
      */
-    public function __construct(string $kind, array $options = [], $content = null)
+    public function __construct(string $kind, array $options = [])
     {
-        parent::__construct($kind, 'jabber:client', $content);
-
-        $this->regenerateId($this->localName);
-        $this->applyOptions($options);
+        $this->regenerateId($kind);
+        parent::__construct($kind, 'jabber:client', $options);
     }
 
     public function getFrom()
@@ -78,6 +77,11 @@ class Stanza extends XmlElement
     public function getId()
     {
         return $this->getAttribute('id');
+    }
+
+    public function getError()
+    {
+        return $this->element('error');
     }
 
     public function setFrom($from)
@@ -134,5 +138,12 @@ class Stanza extends XmlElement
     {
         parent::init($name, $uri);
         $this->regenerateId();
+    }
+
+    public static function getXmlCollocations() : array
+    {
+        return [
+            [ Error::class, 'name' => 'error', 'uri' => 'jabber:client' ],
+        ];
     }
 }

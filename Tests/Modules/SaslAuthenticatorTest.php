@@ -77,7 +77,7 @@ class SaslAuthenticatorTest extends \PHPUnit_Framework_TestCase
     {
         $features = new Features([
             new XmlElement('mechanisms', 'urn:ietf:params:xml:ns:xmpp-sasl', [
-                new XmlElement('mechanism', null, 'STUB')
+                'content' => new XmlElement('mechanism', null, ['content' => 'STUB'])
             ])
         ]);
 
@@ -102,7 +102,7 @@ class SaslAuthenticatorTest extends \PHPUnit_Framework_TestCase
     {
         $features = new Features([
             new XmlElement('mechanisms', 'urn:ietf:params:xml:ns:xmpp-sasl', [
-                new XmlElement('mechanism', null, 'STUB')
+                'content' => new XmlElement('mechanism', null, ['content' => 'STUB'])
             ])
         ]);
 
@@ -132,7 +132,7 @@ class SaslAuthenticatorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($this->_client->get(SaslAuthenticator::class)->auth($features));
         $this->_client->emit('element', [
-            new XmlElement('challenge', 'urn:ietf:params:xml:ns:xmpp-sasl', base64_encode('challenge'))
+            new XmlElement('challenge', 'urn:ietf:params:xml:ns:xmpp-sasl', ['content' => base64_encode('challenge')])
         ]);
     }
 

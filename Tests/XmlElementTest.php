@@ -61,7 +61,12 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
 
     public function testCreation()
     {
-        $element = new XmlElement('tag', self::XMLNS, 'content', ['attr' => 'value']);
+        $element = new XmlElement('tag', self::XMLNS, [
+            'attributes' => [
+                'attr' => 'value'
+            ],
+            'content' => 'content'
+        ]);
 
         $this->assertEquals('tag', $element->localName);
         $this->assertEquals(self::XMLNS, $element->namespace);
