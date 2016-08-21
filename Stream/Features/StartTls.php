@@ -38,6 +38,6 @@ class StartTls extends XmlElement
 
     public function getRequired()
     {
-        return $this->get(\Kadet\Xmpp\Utils\filter\tag('required')) !== false;
+        return $this->get(\Kadet\Xmpp\Utils\filter\name('required')) !== false;
     }
 }

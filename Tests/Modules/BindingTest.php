@@ -62,7 +62,7 @@ class BindingTest extends \PHPUnit_Framework_TestCase
             $bind = $element->element('bind', 'urn:ietf:params:xml:ns:xmpp-bind');
 
             if($resource) {
-                $this->assertTrue($bind->has(\Kadet\Xmpp\Utils\filter\tag('resource')));
+                $this->assertTrue($bind->has(\Kadet\Xmpp\Utils\filter\name('resource')));
                 $this->assertEquals('resource', $bind->element('resource')->innerXml);
             }
 

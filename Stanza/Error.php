@@ -84,7 +84,7 @@ class Error extends XmlElement
     {
         return $this->get(filter\all(
             filter\xmlns(self::XMLNS),
-            filter\not(filter\tag('text'))
+            filter\not(filter\name('text'))
         ))->localName;
     }
 
@@ -103,7 +103,7 @@ class Error extends XmlElement
     {
         return (string)$this->get(filter\all(
             filter\xmlns(self::XMLNS),
-            filter\tag('text')
+            filter\name('text')
         ));
     }
 
@@ -118,7 +118,7 @@ class Error extends XmlElement
 
         $this->get(filter\all(
             filter\xmlns('urn:ietf:params:xml:ns:xmpp-stanzas'),
-            filter\tag('text')
+            filter\name('text')
         ))->innerXml = $text;
     }
 

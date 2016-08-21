@@ -114,12 +114,12 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
         $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
             $this->handleChallenge($challenge, $mechanism);
-        }, with\all(with\tag('challenge'), with\xmlns(self::XMLNS)));
+        }, with\all(with\name('challenge'), with\xmlns(self::XMLNS)));
 
         $this->_client->once('element', function (XmlElement $result) use ($callback) {
             $this->_client->removeListener('element', $callback);
             $this->handleAuthResult($result);
-        }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
+        }, with\all(with\any(with\name('success'), with\name('failure')), with\xmlns(self::XMLNS)));
 
         return $response;
     }
@@ -128,7 +128,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     {
         $this->_client->once('element', function (XmlElement $result) {
             $this->handleAuthResult($result);
-        }, with\all(with\any(with\tag('success'), with\tag('failure')), with\xmlns(self::XMLNS)));
+        }, with\all(with\any(with\name('success'), with\name('failure')), with\xmlns(self::XMLNS)));
 
         return $mechanism->createResponse();
     }

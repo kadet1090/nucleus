@@ -20,7 +20,7 @@ namespace Kadet\Xmpp\Utils\filter {
 
     function element(string $name, string $uri)
     {
-        return all(tag($name), xmlns($uri));
+        return all(name($name), xmlns($uri));
     }
 
     function xmlns($uri)
@@ -34,7 +34,7 @@ namespace Kadet\Xmpp\Utils\filter {
         };
     }
 
-    function tag($name)
+    function name($name)
     {
         return function ($element) use ($name) {
             if(!$element instanceof XmlElement) {

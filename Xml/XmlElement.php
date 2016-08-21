@@ -431,7 +431,7 @@ class XmlElement implements ContainerInterface
      */
     public function elements($name, $uri = null) : array
     {
-        $predicate = filter\tag($name);
+        $predicate = filter\name($name);
         if ($uri !== null) {
             $predicate = filter\all($predicate, filter\xmlns($uri));
         }

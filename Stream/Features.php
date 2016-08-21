@@ -53,6 +53,6 @@ class Features extends XmlElement
     {
         return array_map(function (XmlElement $element) {
             return $element->innerXml;
-        }, $this->get(\Kadet\Xmpp\Utils\filter\tag('mechanisms'))->children ?? []);
+        }, $this->get(\Kadet\Xmpp\Utils\filter\name('mechanisms'))->children ?? []);
     }
 }
