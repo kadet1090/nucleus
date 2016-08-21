@@ -98,6 +98,12 @@ namespace Kadet\Xmpp\Utils\filter {
             return is_callable($value) ? $value($element->getAttribute($name)) : $element->getAttribute($name) === $value;
         };
     }
+
+    function not(callable $predicate) {
+        return function(...$arguments) use ($predicate) {
+            return !$predicate(...$arguments);
+        };
+    }
 }
 
 namespace Kadet\Xmpp\Utils\filter\stanza {

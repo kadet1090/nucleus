@@ -31,6 +31,7 @@ use Kadet\Xmpp\Utils\helper;
  * @property string          $name       Full tag name prefix:local-name
  *
  * @property XmlElement|null $parent     Element's parent or null if root node.
+ * @property XmlElement[]    parents     All element's parents in chronological order (from youngest to oldest)
  * @property XmlElement[]    $children   All element's child nodes
  *
  * @property array           $attributes Element's attributes, without xmlns definitions
@@ -104,7 +105,7 @@ class XmlElement implements ContainerInterface
     public function __construct(string $name, string $uri = null, $content = null, array $attributes = [])
     {
         $this->init($name, $uri);
-        $this->append($content);
+        $this->innerXml = $content;
         foreach($attributes as $name => $value) {
             $this->setAttribute($name, $value);
         }
@@ -143,6 +144,13 @@ class XmlElement implements ContainerInterface
 
             return (string)$element;
         }, $this->_children));
+    }
+
+    public function setInnerXml($value)
+    {
+        $this->_children = [];
+
+        $this->append($value);
     }
 
     /**
@@ -257,6 +265,15 @@ class XmlElement implements ContainerInterface
     public function hasAttribute(string $attribute, string $uri = null)
     {
         return isset($this->_attributes[ $this->_prefix($attribute, $uri) ]);
+    }
+
+    /**
+     * Returns all element's parents in order, oldest ancestor is the last element in returned array.
+     * @return XmlElement[]
+     */
+    public function getParents()
+    {
+        return $this->_parent ? array_merge([ $this->_parent ], $this->_parent->getParents()) : [];
     }
 
     /**

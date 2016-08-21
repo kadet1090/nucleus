@@ -126,7 +126,7 @@ class XmlParser implements BetterEmitterInterface
         $uri   = $this->_lookup($prefix, $namespaces);
 
         /** @var XmlElement $element */
-        $element = $this->factory->create($uri, $tag, [ $name, $uri ]);
+        $element = $this->factory->create($uri, $tag, [ $name, $uri ], $this->_getCollocations());
 
         foreach ($namespaces as $prefix => $uri) {
             $element->setNamespace($uri, $prefix);
@@ -136,6 +136,20 @@ class XmlParser implements BetterEmitterInterface
         }
 
         return $element;
+    }
+
+    private function _getCollocations()
+    {
+        if(empty($this->_stack)) {
+            return [];
+        }
+
+        $top = end($this->_stack);
+        return array_reduce($top->parents, function($additional, $current) {
+            return $current instanceof XmlFactoryCollocations
+                ? array_merge($additional, $current->getXmlCollocations())
+                : $additional;
+        }, $top instanceof XmlFactoryCollocations ? $top->getXmlCollocations() : []);
     }
 
     private function handleElementStart($name, $attrs)

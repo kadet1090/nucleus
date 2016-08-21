@@ -22,12 +22,14 @@ class XmlElementFactory
      */
     private $_lookup = [];
     
-    public function lookup($namespace, $tag)
+    public function lookup($namespace, $tag, $additional = [])
     {
-        if (isset($this->_lookup["$tag@$namespace"])) {
-            return $this->_lookup["$tag@$namespace"];
-        } elseif (isset($this->_lookup[$namespace])) {
-            return $this->_lookup[$namespace];
+        $lookup = array_merge($this->_lookup, $this->_lookupize($additional));
+
+        if (isset($lookup["$tag@$namespace"])) {
+            return $lookup["$tag@$namespace"];
+        } elseif (isset($lookup[$namespace])) {
+            return $lookup[$namespace];
         } else {
             return XmlElement::class;
         }
@@ -35,17 +37,7 @@ class XmlElementFactory
 
     public function register($class, $namespace, $tag = null)
     {
-        if (is_array($namespace)) {
-            $this->_lookup = array_merge($this->_lookup, $namespace);
-
-            return;
-        }
-
-        if ($tag !== null) {
-            $namespace = "$tag@$namespace";
-        }
-
-        $this->_lookup[$namespace] = $class;
+        $this->_lookup = array_merge($this->_lookup, $this->_lookupize([[$class, 'uri' => $namespace, 'name' => $tag]]));
     }
 
     public function load(array $dictionary)
@@ -55,10 +47,25 @@ class XmlElementFactory
         }
     }
 
-    public function create($namespace, $tag, $arguments = [])
+    public function create($namespace, $tag, $arguments = [], $additional = [])
     {
-        $class = $this->lookup($namespace, $tag);
+        $class = $this->lookup($namespace, $tag, $additional);
         /** @noinspection PhpUndefinedMethodInspection */
         return $class::plain(...$arguments);
+    }
+
+    private function _lookupize(array $dictionary)
+    {
+        $result = [];
+        foreach ($dictionary as $element) {
+            $result[$this->_name($element['name'] ?? null, $element['uri'] ?? null)] = $element[0];
+        }
+
+        return $result;
+    }
+
+    private function _name(string $name = null, string $uri = null)
+    {
+        return $name ? "$name@$uri" : $uri;
     }
 }
