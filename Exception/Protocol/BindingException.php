@@ -17,11 +17,10 @@ namespace Kadet\Xmpp\Exception\Protocol;
 
 
 use Exception;
-use Kadet\Xmpp\Exception\ProtocolException;
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Stanza\Error;
 
-class BindingException extends ProtocolException
+class BindingException extends StanzaException
 {
     /**
      * Construct the exception. Note: The message is NOT binary safe.
@@ -34,7 +33,7 @@ class BindingException extends ProtocolException
      */
     public static function fromError(Jid $jid, Error $error, Exception $previous = null)
     {
-        return new static(\Kadet\Xmpp\Utils\helper\format("Cannot bind {resource} for {bare}. {condition}", [
+        return new static($error, \Kadet\Xmpp\Utils\helper\format("Cannot bind {resource} for {bare}. {condition}", [
             'resource'  => $jid->resource ?: "no resource",
             'bare'      => (string)$jid->bare(),
             'condition' => static::_conditionDescription($error)
