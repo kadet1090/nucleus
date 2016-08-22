@@ -38,7 +38,7 @@ class Binding extends ClientModule
 
     public function bind(Features $features)
     {
-        if($features->has(\Kadet\Xmpp\Utils\filter\element('bind', self::XMLNS))) {
+        if($features->has(with\element('bind', self::XMLNS))) {
             $stanza = new Stanza('iq', ['attributes' => ['type' => 'set']]);
             $bind = $stanza->append(new XmlElement('bind', self::XMLNS));
 

@@ -25,6 +25,7 @@ use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
+use Kadet\Xmpp\Utils\filter as with;
 
 /**
  * @covers Kadet\Xmpp\Module\Binding
@@ -58,11 +59,11 @@ class BindingTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('jabber:client', $element->namespace);
             $this->assertEquals('iq', $element->name);
             $this->assertEquals('set', $element->getAttribute('type'));
-            $this->assertTrue($element->has(\Kadet\Xmpp\Utils\filter\element('bind', 'urn:ietf:params:xml:ns:xmpp-bind')));
+            $this->assertTrue($element->has(with\element('bind', 'urn:ietf:params:xml:ns:xmpp-bind')));
             $bind = $element->element('bind', 'urn:ietf:params:xml:ns:xmpp-bind');
 
             if($resource) {
-                $this->assertTrue($bind->has(\Kadet\Xmpp\Utils\filter\name('resource')));
+                $this->assertTrue($bind->has(with\element\name('resource')));
                 $this->assertEquals('resource', $bind->element('resource')->innerXml);
             }
 

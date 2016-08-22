@@ -16,6 +16,7 @@
 namespace Kadet\Xmpp\Stream\Features;
 
 use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Utils\filter;
 
 /**
  * Class StartTls
@@ -38,6 +39,6 @@ class StartTls extends XmlElement
 
     public function getRequired()
     {
-        return $this->get(\Kadet\Xmpp\Utils\filter\name('required')) !== false;
+        return $this->get(filter\element\name('required')) !== false;
     }
 }

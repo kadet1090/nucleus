@@ -34,7 +34,7 @@ class TlsEnabler extends ClientModule
 
         $client->on('element', function (XmlElement $element) {
             $this->handleTls($element);
-        }, with\xmlns(Features\StartTls::XMLNS));
+        }, with\element\xmlns(Features\StartTls::XMLNS));
     }
 
     public function startTls(Features $features)

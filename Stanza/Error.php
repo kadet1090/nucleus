@@ -83,8 +83,8 @@ class Error extends XmlElement
     public function getCondition(): string
     {
         return $this->get(filter\all(
-            filter\xmlns(self::XMLNS),
-            filter\not(filter\name('text'))
+            filter\element\xmlns(self::XMLNS),
+            filter\not(filter\element\name('text'))
         ))->localName;
     }
 
@@ -102,8 +102,8 @@ class Error extends XmlElement
     public function getText(): string
     {
         return (string)$this->get(filter\all(
-            filter\xmlns(self::XMLNS),
-            filter\name('text')
+            filter\element\xmlns(self::XMLNS),
+            filter\element\name('text')
         ));
     }
 
@@ -117,8 +117,8 @@ class Error extends XmlElement
         }
 
         $this->get(filter\all(
-            filter\xmlns('urn:ietf:params:xml:ns:xmpp-stanzas'),
-            filter\name('text')
+            filter\element\xmlns('urn:ietf:params:xml:ns:xmpp-stanzas'),
+            filter\element\name('text')
         ))->innerXml = $text;
     }
 

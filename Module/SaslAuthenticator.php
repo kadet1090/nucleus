@@ -21,9 +21,11 @@ use Fabiang\Sasl\Exception\InvalidArgumentException;
 use Fabiang\Sasl\Sasl;
 use Kadet\Xmpp\Exception\Protocol\AuthenticationException;
 use Kadet\Xmpp\Stream\Features;
-use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
+
+use Kadet\Xmpp\Utils\filter as with;
+use function Kadet\Xmpp\Utils\filter\{any, all};
 
 class SaslAuthenticator extends ClientModule implements Authenticator
 {
@@ -114,12 +116,12 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
         $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
             $this->handleChallenge($challenge, $mechanism);
-        }, with\all(with\name('challenge'), with\xmlns(self::XMLNS)));
+        }, with\element('challenge', self::XMLNS));
 
         $this->_client->once('element', function (XmlElement $result) use ($callback) {
             $this->_client->removeListener('element', $callback);
             $this->handleAuthResult($result);
-        }, with\all(with\any(with\name('success'), with\name('failure')), with\xmlns(self::XMLNS)));
+        }, $this->_resultPredicate());
 
         return $response;
     }
@@ -128,7 +130,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     {
         $this->_client->once('element', function (XmlElement $result) {
             $this->handleAuthResult($result);
-        }, with\all(with\any(with\name('success'), with\name('failure')), with\xmlns(self::XMLNS)));
+        }, $this->_resultPredicate());
 
         return $mechanism->createResponse();
     }
@@ -155,5 +157,10 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     public function setPassword(string $password = null)
     {
         $this->_password = $password;
+    }
+
+    private function _resultPredicate()
+    {
+        return all(any(with\element\name('success'), with\element\name('failure')), with\element\xmlns(self::XMLNS));
     }
 }

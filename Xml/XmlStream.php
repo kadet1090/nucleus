@@ -86,17 +86,17 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
         $this->on('element', function (Error $element) {
             $this->handleError($element);
-        }, with\ofType(Error::class));
+        }, with\instance(Error::class));
 
         $this->_parser->on('parse.begin', function (XmlElement $stream) {
             $this->_stream = $stream;
             $this->emit('stream.open', [ $stream ]);
-        }, with\all(with\name('stream'), with\xmlns(self::NAMESPACE_URI)));
+        }, with\element('stream', self::NAMESPACE_URI));
 
         $this->_parser->on('parse.end', function (XmlElement $stream) {
             $this->emit('stream.close', [ $stream ]);
             $this->_stream = null;
-        }, with\all(with\name('stream'), with\xmlns(self::NAMESPACE_URI)));
+        }, with\element('stream', self::NAMESPACE_URI));
 
         $this->on('data', [$this->_parser, 'parse']);
         $this->_parser->on('element', function (...$arguments) {

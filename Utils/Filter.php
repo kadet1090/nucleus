@@ -13,107 +13,74 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Utils\filter {
-    use Kadet\Xmpp\Exception\InvalidArgumentException;
-    use Kadet\Xmpp\Xml\XmlElement;
-    use Kadet\Xmpp\Utils\helper;
+namespace Kadet\Xmpp\Utils\filter;
 
-    function element(string $name, string $uri)
-    {
-        return all(name($name), xmlns($uri));
-    }
+require __DIR__ . '/Filter/element.php';
+require __DIR__ . '/Filter/stanza.php';
 
-    function xmlns($uri)
-    {
-        return function ($element) use ($uri) {
-            if(!$element instanceof XmlElement) {
+use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Utils\helper;
+
+function instance($class)
+{
+    return function ($object) use ($class) {
+        return $object instanceof $class;
+    };
+}
+
+function all(callable ...$functions)
+{
+    return function (...$args) use ($functions) {
+        foreach ($functions as $function) {
+            if (!$function(...$args)) {
                 return false;
             }
-
-            return $element->namespace === $uri;
-        };
-    }
-
-    function name($name)
-    {
-        return function ($element) use ($name) {
-            if(!$element instanceof XmlElement) {
-                return false;
-            }
-
-            return $element->localName === $name;
-        };
-    }
-
-    function ofType($class)
-    {
-        return function ($object) use ($class) {
-            return $object instanceof $class;
-        };
-    }
-
-    function all(callable ...$functions)
-    {
-        return function (...$args) use ($functions) {
-            foreach ($functions as $function) {
-                if (!$function(...$args)) {
-                    return false;
-                }
-            }
-
-            return true;
-        };
-    }
-
-    function any(callable ...$functions)
-    {
-        return function (...$args) use ($functions) {
-            foreach ($functions as $function) {
-                if ($function(...$args)) {
-                    return true;
-                }
-            }
-
-            return false;
-        };
-    }
-
-    function predicate($predicate) : callable
-    {
-        if (is_callable($predicate)) {
-            return $predicate;
-        } elseif (class_exists($predicate)) {
-            return ofType($predicate);
-        } else {
-            throw new InvalidArgumentException('$condition must be either class-name or callable, ' . helper\typeof($predicate) . ' given.');
         }
-    }
 
-    function argument($name, $value) {
-        return function($element) use ($name, $value) {
-            if(!$element instanceof XmlElement) {
-                return false;
+        return true;
+    };
+}
+
+function any(callable ...$functions)
+{
+    return function (...$args) use ($functions) {
+        foreach ($functions as $function) {
+            if ($function(...$args)) {
+                return true;
             }
+        }
 
-            return is_callable($value) ? $value($element->getAttribute($name)) : $element->getAttribute($name) === $value;
-        };
-    }
+        return false;
+    };
+}
 
-    function not(callable $predicate) {
-        return function(...$arguments) use ($predicate) {
-            return !$predicate(...$arguments);
-        };
+function predicate($predicate) : callable
+{
+    if (is_callable($predicate)) {
+        return $predicate;
+    } elseif (class_exists($predicate)) {
+        return instance($predicate);
+    } else {
+        throw new InvalidArgumentException('$condition must be either class-name or callable, ' . helper\typeof($predicate) . ' given.');
     }
 }
 
-namespace Kadet\Xmpp\Utils\filter\stanza {
-    use Kadet\Xmpp\Utils\filter;
-
-    function id($id) {
-        return filter\argument('id', $id);
-    }
-
-    function type($type) {
-        return filter\argument('type', $type);
-    }
+function not(callable $predicate)
+{
+    return function (...$arguments) use ($predicate) {
+        return !$predicate(...$arguments);
+    };
 }
+
+function arguments(callable $predicate, int $offset, int $length = null)
+{
+    return function (...$arguments) use ($predicate, $offset, $length) {
+        $predicate(...array_slice($arguments, $offset, $length, false));
+    };
+}
+
+function element(string $name, string $uri)
+{
+    return all(element\name($name), element\xmlns($uri));
+}
+

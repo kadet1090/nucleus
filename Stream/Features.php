@@ -19,6 +19,7 @@ use Kadet\Xmpp\Stream\Features\StartTls;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XmlStream;
+use Kadet\Xmpp\Utils\filter;
 
 /**
  * Class Features
@@ -53,6 +54,6 @@ class Features extends XmlElement
     {
         return array_map(function (XmlElement $element) {
             return $element->innerXml;
-        }, $this->get(\Kadet\Xmpp\Utils\filter\name('mechanisms'))->children ?? []);
+        }, $this->get(filter\element\name('mechanisms'))->children ?? []);
     }
 }
