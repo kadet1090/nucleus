@@ -39,7 +39,7 @@ use Kadet\Xmpp\Xml\XmlElement;
  */
 function xmlns($uri)
 {
-    $predicate = \Kadet\Xmpp\Utils\filter\predicate($uri, true);
+    $predicate = $uri instanceof \Closure ? $uri : \Kadet\Xmpp\Utils\filter\same($uri);
 
     return function ($element) use ($predicate) {
         if (!$element instanceof XmlElement) {
@@ -72,7 +72,7 @@ function xmlns($uri)
  */
 function name($name)
 {
-    $predicate = \Kadet\Xmpp\Utils\filter\predicate($name, true);
+    $predicate = $name instanceof \Closure ? $name : \Kadet\Xmpp\Utils\filter\same($name);
 
     return function ($element) use ($predicate) {
         if (!$element instanceof XmlElement) {
@@ -106,7 +106,7 @@ function name($name)
  */
 function attribute($name, $value)
 {
-    $predicate = \Kadet\Xmpp\Utils\filter\predicate($value, true);
+    $predicate = $value instanceof \Closure ? $value : \Kadet\Xmpp\Utils\filter\equals($value);
 
     return function ($element) use ($name, $predicate) {
         if (!$element instanceof XmlElement) {
