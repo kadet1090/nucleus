@@ -230,7 +230,7 @@ function argument(callable $predicate, int $offset, $length = true) : \Closure
     }
 
     return function (...$arguments) use ($predicate, $offset, $length) {
-        $predicate(...array_slice($arguments, $offset, $length, false));
+        return $predicate(...array_slice($arguments, $offset, $length, false));
     };
 }
 
