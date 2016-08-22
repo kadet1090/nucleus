@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Nucleus - XMPP Library for PHP
+  ~
+  ~ Copyright (C) 2016, Some rights reserved.
+  ~
+  ~ @author Kacper "Kadet" Donat <kacper@kadet.net>
+  ~
+  ~ Contact with author:
+  ~ Xmpp: me@kadet.net
+  ~ E-mail: contact@kadet.net
+  ~
+  ~ From Kadet with love.
+  -->
+
+<phpdoc>
+    <parser>
+        <target>Docs</target>
+    </parser>
+    <transformer>
+        <target>Docs</target>
+    </transformer>
+    <transformations>
+        <template name="responsive" />
+    </transformations>
+    <files>
+        <directory>.</directory>
+        <ignore>vendor/*</ignore>
+        <ignore>Tests/*</ignore>
+    </files>
+</phpdoc>

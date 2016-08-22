@@ -20,7 +20,7 @@ class XmlElementFactory
     /**
      * @var string[string]
      */
-    private $_lookup = [];
+    private $_lookup = ['<predicate>' => ''];
     
     public function lookup($namespace, $tag, $additional = [])
     {
