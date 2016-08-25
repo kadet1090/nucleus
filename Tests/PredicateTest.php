@@ -15,6 +15,9 @@
 
 namespace Kadet\Xmpp\Tests;
 
+use function Kadet\Xmpp\Utils\filter\equals;
+use function Kadet\Xmpp\Utils\filter\pass;
+
 interface Kek {}
 class Foo {}
 class Bar {}
@@ -110,6 +113,29 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($predicate());
     }
 
+    public function testPassPredicate()
+    {
+        $predicate = \Kadet\Xmpp\Utils\filter\pass();
+
+        $this->assertTrue($predicate());
+    }
+
+    public function testFailPredicate()
+    {
+        $predicate = \Kadet\Xmpp\Utils\filter\fail();
+
+        $this->assertFalse($predicate());
+    }
+
+    public function testMatchesPredicate()
+    {
+        $predicate = \Kadet\Xmpp\Utils\filter\matches('~^https?://~');
+
+        $this->assertTrue($predicate('http://google.pl'));
+        $this->assertTrue($predicate('https://google.pl'));
+        $this->assertFalse($predicate('google.pl'));
+    }
+
     /**
      * @dataProvider argumentProvider
      * @param $predicate
@@ -117,6 +143,13 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
     public function testArgumentBinding($predicate)
     {
         $this->assertTrue($predicate(1, 2, 3, 4));
+    }
+
+    public function testConsecutive()
+    {
+        $predicate = \Kadet\Xmpp\Utils\filter\consecutive(pass(), pass(), equals(3));
+        $this->assertTrue($predicate('foo', 'bar', 3));
+        $this->assertFalse($predicate('foo', 3, 'bar'));
     }
 
     public function argumentProvider()
