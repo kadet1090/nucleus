@@ -39,7 +39,7 @@ class Binding extends ClientModule
     public function bind(Features $features)
     {
         if($features->has(with\element('bind', self::XMLNS))) {
-            $stanza = new Stanza('iq', ['attributes' => ['type' => 'set']]);
+            $stanza = new Stanza('iq', ['type' => 'set']);
             $bind = $stanza->append(new XmlElement('bind', self::XMLNS));
 
             if(!$this->_client->jid->isBare()) {

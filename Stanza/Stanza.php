@@ -53,7 +53,7 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
 
     public function getFrom()
     {
-        if($this->_from === false) {
+        if((string)$this->_from !== $this->hasAttribute('from')) {
             $this->_from = $this->hasAttribute('from') ? new Jid($this->_from) : null;
         }
 
@@ -62,7 +62,7 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
 
     public function getTo()
     {
-        if($this->_to === false) {
+        if((string)$this->_to !== $this->hasAttribute('to')) {
             $this->_to = $this->hasAttribute('to') ? new Jid($this->_to) : null;
         }
 
@@ -126,18 +126,6 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
         $response->id   = $this->id;
 
         return $response;
-    }
-
-    /**
-     * Initializes element with given name and URI
-     *
-     * @param string $name Element name, including prefix if needed
-     * @param string $uri  Namespace URI of element
-     */
-    protected function init(string $name, string $uri = null)
-    {
-        parent::init($name, $uri);
-        $this->regenerateId();
     }
 
     public static function getXmlCollocations() : array

@@ -18,6 +18,7 @@ namespace Kadet\Xmpp\Xml;
 use Kadet\Xmpp\Exception\Protocol\StreamErrorException;
 use Kadet\Xmpp\Exception\ReadOnlyException;
 use Kadet\Xmpp\Stream\Error;
+use Kadet\Xmpp\Stream\Stream;
 use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\Logging;
 use Kadet\Xmpp\Utils\StreamDecorator;
@@ -64,11 +65,18 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
     private $_isOpened = false;
 
     /**
-     * Stream root element
+     * Inbound Stream root element
      *
      * @var XmlElement
      */
-    private $_stream;
+    private $_inbound;
+
+    /**
+     * Outbound Stream root element
+     *
+     * @var XmlElement
+     */
+    private $_outbound;
 
     /**
      * XmlStream constructor.
@@ -89,14 +97,14 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         }, with\instance(Error::class));
 
         $this->_parser->on('parse.begin', function (XmlElement $stream) {
-            $this->_stream = $stream;
+            $this->_inbound = $stream;
             $this->emit('stream.open', [ $stream ]);
-        }, with\element('stream', self::NAMESPACE_URI));
+        }, with\argument(1, with\equals(0)));
 
         $this->_parser->on('parse.end', function (XmlElement $stream) {
             $this->emit('stream.close', [ $stream ]);
-            $this->_stream = null;
-        }, with\element('stream', self::NAMESPACE_URI));
+            $this->_inbound = null;
+        }, with\argument(1, with\equals(0)));
 
         $this->on('data', [$this->_parser, 'parse']);
         $this->_parser->on('element', function (...$arguments) {
@@ -121,6 +129,10 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      */
     public function write($data)
     {
+        if($data instanceof XmlElement) {
+            $this->_outbound->append($data);
+        }
+
         $this->emit('send.'.($data instanceof XmlElement ? 'element' : 'text'), [ $data ]);
 
         return parent::write($data);
@@ -136,13 +148,9 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         $this->_parser->reset();
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
+        $this->_outbound = new Stream(['attributes' => $attributes]);
 
-        $stream = XmlElement::plain('stream:stream', 'http://etherx.jabber.org/streams');
-        foreach ($attributes as $key => $value) {
-            $stream->setAttribute($key, $value);
-        }
-
-        $this->write(preg_replace('~\s+/>$~', '>', $stream));
+        $this->write(preg_replace('~\s+/>$~', '>', $this->_outbound));
         $this->_isOpened = true;
     }
 
@@ -171,7 +179,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
     public function __get($name)
     {
-        return $this->_stream->getAttribute($name === 'lang' ? 'xml:lang' : $name);
+        return $this->_inbound->getAttribute($name === 'lang' ? 'xml:lang' : $name);
     }
 
     public function __set($name, $value)
@@ -181,7 +189,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
     public function __isset($name)
     {
-        return $this->_stream->hasAttribute($name);
+        return $this->_inbound->hasAttribute($name);
     }
 
     private function handleError(Error $element)

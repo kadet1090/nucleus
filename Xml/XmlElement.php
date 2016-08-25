@@ -327,10 +327,14 @@ class XmlElement implements ContainerInterface
         }
 
         if(is_array($element)) {
-            array_walk($element, [$this, 'append']);
+            array_walk($element, [$this, 'appendChild']);
             return $element;
         }
 
+        return $this->appendChild($element);
+    }
+
+    protected function appendChild($element) {
         if (!is_string($element) && !$element instanceof XmlElement) {
             throw new InvalidArgumentException(helper\format(
                 '$element should be either string or object of {class} class. or array of given types, {type} given', [
@@ -470,6 +474,13 @@ class XmlElement implements ContainerInterface
         return false;
     }
 
+    /**
+     * Checks if any element matching predicate exists
+     *
+     * @param callable|string $predicate Predicate or class name
+     *
+     * @return bool
+     */
     public function has($predicate)
     {
         return $this->get($predicate) !== false;

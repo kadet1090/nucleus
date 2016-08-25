@@ -189,6 +189,8 @@ class XmppClient extends XmlStream implements ContainerInterface
     {
         $this->jid = new Jid($jid);
         $this->emit('bind', [$jid]);
+
+        $this->emit('ready', []);
     }
 
     private function handleConnect($stream)

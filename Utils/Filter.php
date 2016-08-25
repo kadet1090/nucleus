@@ -83,6 +83,32 @@ function instance($class) : \Closure
 }
 
 /**
+ * Predicate used to match value against some regex.
+ *
+ * ```php
+ * $predicate = regex('/^https?:\/\//');
+ *
+ * $predicate('http://google.com'); // true
+ * $predicate('https://google.com'); // true
+ * $predicate('google.com'); // false
+ * ```
+ *
+ * You can also pass additional arguments for preg_match call (starting from $flags)
+ *
+ * @see preg_match()
+ *
+ * @param string $regex
+ * @param array  ...$options
+ * @return \Closure
+ */
+function matches($regex, ...$options) : \Closure
+{
+    return function ($value) use ($regex, $options) {
+        return preg_match($regex, $value, $null, ...$options) > 0;
+    };
+}
+
+/**
  * Returns constant function, that always returns specified value.
  *
  * ```php
@@ -101,6 +127,36 @@ function constant($return) : \Closure
     return function() use ($return) {
         return $return;
     };
+}
+
+/**
+ * Returns always true predicate.
+ *
+ * ```php
+ * $predicate = pass();
+ * $predicate(); // true
+ * ```
+ *
+ * @return \Closure
+ */
+function pass()
+{
+    return constant(true);
+}
+
+/**
+ * Returns always false predicate.
+ *
+ * ```php
+ * $predicate = fail();
+ * $predicate(); // false
+ * ```
+ *
+ * @return \Closure
+ */
+function fail()
+{
+    return constant(false);
 }
 
 /**
@@ -207,21 +263,20 @@ function not(callable $predicate) : \Closure
  * check is the second one, so we need to wrap it with `argument` helper:
  *
  * ```php
- * $predicate = argument(instance(Foo::class), 2);
+ * $predicate = argument(instance(Foo::class), 1);
  * var_dump($predicate("smth", new Foo)); // true as second argument matches instance predicate
  * var_dump($predicate(new Foo, "smth")); // true as second argument does not match instance predicate
  * ```
  *
+ * @param int      $offset    Argument offset, 0 based
  * @param callable $predicate Predicate to match on specified offset
- * @param int      $offset    Argument offset
  * @param bool|int $length    [optional]
  *                            `true`:  will return ONLY argument at $offset
  *                            `false`: will return all arguments from $offset
  *                            int:     will return $length arguments from $offset
- *
  * @return \Closure
  */
-function argument(callable $predicate, int $offset, $length = true) : \Closure
+function argument(int $offset, callable $predicate, $length = true) : \Closure
 {
     if($length === true) {
         $length = 1;
@@ -233,6 +288,36 @@ function argument(callable $predicate, int $offset, $length = true) : \Closure
         return $predicate(...array_slice($arguments, $offset, $length, false));
     };
 }
+
+/**
+ * Assigns predicates to arguments in relation one to one.
+ *
+ * ```php
+ * $first = equals("foo");
+ * $second = equals("bar");
+ *
+ * $predicate = consecutive($first, $second);
+ *
+ * $predicate("foo", "bar"); // true, as "foo" matches $first predicate, and "bar" matches $second predicate
+ * $predicate("foo", "foo"); // true, as "foo" matches $first predicate, but "foo" doesn't match $second predicate
+ * ```
+ *
+ * @param \callable[] ...$predicates Predicates matching order of call
+ * @return \Closure
+ */
+function consecutive(callable ...$predicates)
+{
+    return function (...$arguments) use ($predicates) {
+        foreach ($arguments as $index => $value) {
+            if(!$predicates[$index]($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+}
+
 
 /**
  * Shorthand for calling
@@ -252,4 +337,3 @@ function element(string $name, string $uri)
 {
     return all(element\name($name), element\xmlns($uri));
 }
-

@@ -94,14 +94,14 @@ function name($name)
  *
  * ```php
  * $foo = attribute("foo", "yes");
- * $bar = attribute("foo", "string")
+ * $bar = attribute("bar", "yes")
  *
  * $foo($element); // true
- * $bar($element); // false, as element name is foo
+ * $bar($element); // false
  * ```
  *
- * @param string|\Closure $name Expected element name or predicate.
- * @param                 $value
+ * @param string $name    Argument name
+ * @param string|\Closure Expected argument value
  * @return \Closure
  */
 function attribute($name, $value)

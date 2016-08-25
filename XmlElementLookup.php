@@ -14,6 +14,7 @@
  */
 
 return [
+    [\Kadet\Xmpp\Stream\Stream::class, 'name' => 'stream', 'uri' => \Kadet\Xmpp\Xml\XmlStream::NAMESPACE_URI],
     [\Kadet\Xmpp\Stream\Features::class, 'name' => 'features', 'uri' => \Kadet\Xmpp\XmppClient::NAMESPACE_URI],
     [\Kadet\Xmpp\Stream\Features\StartTls::class, 'name' => 'starttls', 'uri' => \Kadet\Xmpp\Stream\Features\StartTls::XMLNS],
 

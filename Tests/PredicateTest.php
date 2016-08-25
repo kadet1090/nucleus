@@ -122,15 +122,15 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
     public function argumentProvider()
     {
         return [
-            'one'  => [\Kadet\Xmpp\Utils\filter\argument(function(...$arguments) {
+            'one'  => [\Kadet\Xmpp\Utils\filter\argument(1, function (...$arguments) {
                 return $arguments === [2];
-            }, 1)],
-            'two'  => [\Kadet\Xmpp\Utils\filter\argument(function(...$arguments) {
+            })],
+            'two'  => [\Kadet\Xmpp\Utils\filter\argument(1, function (...$arguments) {
                 return $arguments === [2, 3];
-            }, 1, 2)],
-            'many' => [\Kadet\Xmpp\Utils\filter\argument(function(...$arguments) {
-                return $arguments === [2,3,4];
-            }, 1, false)],
+            }, 2)],
+            'many' => [\Kadet\Xmpp\Utils\filter\argument(1, function (...$arguments) {
+                return $arguments === [2, 3, 4];
+            }, false)],
         ];
     }
 }
