@@ -136,6 +136,14 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($predicate('google.pl'));
     }
 
+    public function testInPredicate()
+    {
+        $predicate = \Kadet\Xmpp\Utils\filter\in('foo', 'bar');
+
+        $this->assertTrue($predicate('foo'));
+        $this->assertFalse($predicate('nope'));
+    }
+
     /**
      * @dataProvider argumentProvider
      * @param $predicate

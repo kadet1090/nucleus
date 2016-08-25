@@ -71,14 +71,14 @@ function same($value) : \Closure
  * $predicate(new class extends Foo {}); // true, as anonymous class extends Foo
  * ```
  *
- * @param string $class Desired class name.
+ * @param string|\Closure $expected Desired class name or predicate to match it
  *
  * @return \Closure
  */
-function instance($class) : \Closure
+function instance($expected) : \Closure
 {
-    return function ($object) use ($class) {
-        return $object instanceof $class;
+    return function ($object) use ($expected) {
+        return $expected instanceof \Closure ? $expected(get_class($object)) : $object instanceof $expected;
     };
 }
 
@@ -105,6 +105,25 @@ function matches($regex, ...$options) : \Closure
 {
     return function ($value) use ($regex, $options) {
         return preg_match($regex, $value, $null, ...$options) > 0;
+    };
+}
+
+/**
+ * Predicate used to check if value exists in given array.
+ *
+ * ```php
+ * $predicate = in('foo', 'bar');
+ *
+ * $predicate('foo'); // true
+ * $predicate('nope'); // false
+ * ```
+ *
+ * @param mixed ...$options
+ * @return \Closure
+ */
+function in(...$options) {
+    return function ($value) use ($options) {
+        return in_array($value, $options);
     };
 }
 
@@ -329,11 +348,11 @@ function consecutive(callable ...$predicates)
  * @see \Kadet\Xmpp\Utils\filter\element\name($name)
  * @see \Kadet\Xmpp\Utils\filter\element\xmlns($uri)
  *
- * @param string $name Element name
- * @param string $uri  Element namespace
+ * @param string|\Closure $name Element name
+ * @param string|\Closure $uri  Element namespace
  * @return \Closure
  */
-function element(string $name, string $uri)
+function element($name, $uri)
 {
     return all(element\name($name), element\xmlns($uri));
 }
