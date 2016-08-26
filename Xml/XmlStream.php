@@ -92,15 +92,18 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         $this->setParser($parser);
 
         $this->on('close', function () { $this->_isOpened = false; });
+        $this->on('element', function (Error $element) {
+            $this->handleError($element);
+        }, with\instance(Error::class));
     }
 
     public function setParser(XmlParser $parser)
     {
-        $this->_parser = $parser;
+        if($this->_parser) {
+            $this->removeListener('data', [ $this->_parser, 'parse' ]);
+        }
 
-        $this->on('element', function (Error $element) {
-            $this->handleError($element);
-        }, with\instance(Error::class));
+        $this->_parser = $parser;
 
         $this->_parser->on('parse.begin', function (XmlElement $stream) {
             $this->_inbound = $stream;
@@ -116,7 +119,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
             $this->emit('element', $arguments);
         });
 
-        $this->on('data', [$this->_parser, 'parse']);
+        $this->on('data', [ $this->_parser, 'parse' ]);
     }
 
     /**
