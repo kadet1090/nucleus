@@ -32,7 +32,9 @@ use Kadet\Xmpp\Xml\XmlFactoryCollocations;
  */
 class Stanza extends XmlElement implements XmlFactoryCollocations
 {
+    /** @var bool|Jid */
     private $_from = false;
+    /** @var bool|Jid */
     private $_to   = false;
 
     /**

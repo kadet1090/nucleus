@@ -50,7 +50,7 @@ class Error extends XmlElement
      */
     public function setBy(string $by)
     {
-        $this->setAttribute('by');
+        $this->setAttribute('by', $by);
     }
 
     /**
@@ -74,7 +74,7 @@ class Error extends XmlElement
             );
         }
 
-        $this->setAttribute('type');
+        $this->setAttribute('type', $type);
     }
 
     /**

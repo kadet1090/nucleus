@@ -22,6 +22,7 @@ use Kadet\Xmpp\XmppClient;
 
 class PingKeepAlive extends ClientModule
 {
+    /** @var float|int */
     private $_interval = 15;
     private $_timer;
 

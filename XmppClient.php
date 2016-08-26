@@ -203,19 +203,31 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->emit('init', [$queue]);
     }
 
+    /**
+     * Registers module in client's dependency container.
+     *
+     * @param ClientModuleInterface $module Module to be registered
+     * @param bool|string           $alias  Module alias, class name by default.
+     *                                      `true` for aliasing interfaces and parents too,
+     *                                      `false` for aliasing as class name only
+     *                                      array for multiple aliases,
+     *                                      and any string for alias name
+     */
     public function register(ClientModuleInterface $module, $alias = true)
     {
         $module->setClient($this);
         if ($alias === true) {
             $this->_container->set(get_class($module), $module);
-            $aliases = array_merge(class_implements($module), array_slice(class_parents($module), 1));
-            foreach ($aliases as $alias) {
-                if (!$this->has($alias)) {
-                    $this->_container->set($alias, $module);
+
+            $this->register($module, array_merge(class_implements($module), array_slice(class_parents($module), 1)));
+        } elseif(is_array($alias)) {
+            foreach ($alias as $name) {
+                if (!$this->has($name)) {
+                    $this->register($module, $name);
                 }
             }
         } else {
-            $this->_container->set($alias === true ? get_class($module) : $alias, $module);
+            $this->_container->set($alias === false ? get_class($module) : $alias, $module);
         }
     }
 
