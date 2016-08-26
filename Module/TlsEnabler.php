@@ -33,7 +33,7 @@ class TlsEnabler extends ClientModule
         }, null, 10);
 
         $client->on('element', function (XmlElement $element) {
-            $this->handleTls($element);
+            return $this->handleTls($element);
         }, with\element\xmlns(Features\StartTls::XMLNS));
     }
 
@@ -61,6 +61,8 @@ class TlsEnabler extends ClientModule
             /** @noinspection PhpUndefinedMethodInspection */
             $this->_client->getDecorated()->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
             $this->_client->restart();
+
+            $this->_client->state = 'secured';
         } else {
             throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened
         }

@@ -89,7 +89,13 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
     public function __construct(XmlParser $parser, DuplexStreamInterface $transport = null)
     {
         parent::__construct($transport);
+        $this->setParser($parser);
 
+        $this->on('close', function () { $this->_isOpened = false; });
+    }
+
+    public function setParser(XmlParser $parser)
+    {
         $this->_parser = $parser;
 
         $this->on('element', function (Error $element) {
@@ -106,25 +112,17 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
             $this->_inbound = null;
         }, with\argument(1, with\equals(0)));
 
-        $this->on('data', [$this->_parser, 'parse']);
         $this->_parser->on('element', function (...$arguments) {
-            try {
-                $this->emit('element', $arguments);
-            } catch(\Throwable $error) {
-                if($this->emit('exception', [ $error ])) {
-                    throw $error;
-                }
-            }
-
+            $this->emit('element', $arguments);
         });
-        $this->on('close', function () { $this->_isOpened = false; });
+
+        $this->on('data', [$this->_parser, 'parse']);
     }
 
     /**
      * Writes data to stream
      *
      * @param  string $data Data to write
-     *
      * @return bool
      */
     public function write($data)

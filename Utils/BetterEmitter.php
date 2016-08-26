@@ -51,8 +51,14 @@ trait BetterEmitter
     public function emit($event, array $arguments = [])
     {
         foreach ($this->listeners($event) as $listener) {
-            if ($listener(...$arguments) === false) {
-                return false;
+            try {
+                if ($listener(...$arguments) === false) {
+                    return false;
+                }
+            } catch (\Throwable $exception) {
+                if($this->emit('exception', [ $exception, $event ])) {
+                    throw $exception;
+                }
             }
         }
 

@@ -25,7 +25,9 @@ use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 
 use Kadet\Xmpp\Utils\filter as with;
-use function Kadet\Xmpp\Utils\filter\{any, all};
+use function Kadet\Xmpp\Utils\filter\{
+    all, in
+};
 
 class SaslAuthenticator extends ClientModule implements Authenticator
 {
@@ -161,6 +163,6 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
     private function _resultPredicate()
     {
-        return all(any(with\element\name('success'), with\element\name('failure')), with\element\xmlns(self::XMLNS));
+        return all(with\element\name(in('success', 'failure')), with\element\xmlns(self::XMLNS));
     }
 }

@@ -19,6 +19,7 @@ use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Exception\WriteOnlyException;
 use Kadet\Xmpp\Module\Authenticator;
 use Kadet\Xmpp\Module\Binding;
 use Kadet\Xmpp\Module\ClientModule;
@@ -29,6 +30,7 @@ use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter as with;
+use Kadet\Xmpp\Utils\ObservableCollection;
 use Kadet\Xmpp\Utils\ServiceManager;
 use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
@@ -39,47 +41,66 @@ use React\EventLoop\LoopInterface;
  * Class XmppClient
  * @package Kadet\Xmpp
  *
- * @property-read Jid                $jid       Client's jid (Jabber Identifier) address.
- * @property-read Features           $features  Features provided by that stream
- * @property-read ContainerInterface $container Dependency container used for module management.
- * @property-read string             $language  Stream language (reflects xml:language attribute)
+ * @property Features           $features  Features provided by that stream
+ * @property XmlParser          $parser    XmlParser instance used to process data from stream, can be exchanged only
+ *                                         when client is not connected to server.
+ * @property string             $resource  Client's jid resource
+ * @property Jid                $jid       Client's jid (Jabber Identifier) address.
+ * @property ContainerInterface $container Dependency container used for module management.
+ * @property string             $language  Stream language (reflects xml:language attribute)
+ * @property string             $state     Current client state
+ *                                         `disconnected`   - not connected to any server,
+ *                                         `connected`      - connected to server, but nothing happened yet,
+ *                                         `secured`        - [optional] TLS negotiation succeeded, after stream restart
+ *                                         `authenticated`  - authentication succeeded,
+ *                                         `bound`          - resource binding succeeded,
+ *                                         `ready`          - client is ready to operate
  *
- * @property-write Connector         $connector
+ *                                         However modules can add custom states.
+ *
+ * @property-write Connector    $connector Connector used for obtaining stream
+ * @property-write string       $password  Password used for client authentication
  */
 class XmppClient extends XmlStream implements ContainerInterface
 {
     use ServiceManager, Accessors;
-
-    private $_attributes = [];
-    private $_lang;
 
     /**
      * Connector used to instantiate stream connection to server.
      *
      * @var Connector
      */
-    protected $_connector;
+    private $_connector;
 
     /**
      * Client's jid (Jabber Identifier) address.
      *
      * @var Jid
      */
-    protected $_jid;
+    private $_jid;
 
     /**
      * Dependency container used as service manager.
      *
      * @var Container
      */
-    protected $_container;
+    private $_container;
 
     /**
      * Features provided by that stream
      *
      * @var Features
      */
-    protected $_features;
+    private $_features;
+
+    /**
+     * Current client state.
+     *
+     * @var string
+     */
+    private $_state = 'disconnected';
+    private $_attributes = [];
+    private $_lang;
 
     /**
      * XmppClient constructor.
@@ -99,32 +120,25 @@ class XmppClient extends XmlStream implements ContainerInterface
             'language'  => 'en',
             'container' => ContainerBuilder::buildDevContainer(),
             'connector' => $options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']),
+            'jid'       => $jid,
 
             'modules'         => [],
             'default-modules' => true,
         ], $options);
-        $options['jid'] = $jid;
 
         parent::__construct($options['parser'], null);
-        $this->_parser->factory->load(require __DIR__ . '/XmlElementLookup.php');
+        unset($options['parser']);
 
         $this->applyOptions($options);
-
-        $this->_connector->on('connect', function (...$arguments) {
-            return $this->emit('connect', $arguments);
-        });
 
         $this->on('element', function (Features $element) {
             $this->_features = $element;
             $this->emit('features', [$element]);
         }, Features::class);
-
-        $this->connect();
     }
 
     public function applyOptions(array $options)
     {
-        unset($options['parser']); // don't need that
         $options = \Kadet\Xmpp\Utils\helper\rearrange($options, [
             'container' => 6,
             'jid'       => 5,
@@ -133,7 +147,7 @@ class XmppClient extends XmlStream implements ContainerInterface
             'password'  => -1
         ]);
 
-        if($options['default-modules']) {
+        if ($options['default-modules']) {
             $options['modules'] = array_merge([
                 TlsEnabler::class    => new TlsEnabler(),
                 Binding::class       => new Binding(),
@@ -144,6 +158,12 @@ class XmppClient extends XmlStream implements ContainerInterface
         foreach ($options as $name => $value) {
             $this->$name = $value;
         }
+    }
+
+    public function restart()
+    {
+        $this->getLogger()->debug('Restarting stream', $this->_attributes);
+        $this->start($this->_attributes);
     }
 
     public function start(array $attributes = [])
@@ -157,12 +177,6 @@ class XmppClient extends XmlStream implements ContainerInterface
         ], $attributes));
     }
 
-    public function restart()
-    {
-        $this->getLogger()->debug('Restarting stream', $this->_attributes);
-        $this->start($this->_attributes);
-    }
-
     public function connect()
     {
         $this->getLogger()->debug("Connecting to {$this->_jid->domain}");
@@ -170,59 +184,19 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->_connector->connect();
     }
 
-    public function setResource(string $resource)
-    {
-        $this->_jid = new Jid($this->_jid->domain, $this->_jid->local, $resource);
-    }
-
-    public function getJid()
-    {
-        return $this->_jid;
-    }
-
-    protected function setJid(Jid $jid)
-    {
-        $this->_jid = $jid;
-    }
-
     public function bind($jid)
     {
         $this->jid = new Jid($jid);
         $this->emit('bind', [$jid]);
 
-        $this->emit('ready', []);
-    }
+        $this->state = 'bound';
 
-    private function handleConnect($stream)
-    {
-        $this->exchangeStream($stream);
-
-        $this->getLogger()->info("Connected to {$this->_jid->domain}");
-        $this->start([
-            'from' => (string)$this->_jid,
-            'to'   => $this->_jid->domain
-        ]);
-    }
-
-    /**
-     * @param $connector
-     */
-    protected function setConnector($connector)
-    {
-        if ($connector instanceof LoopInterface) {
-            $this->_connector = new Connector\TcpXmppConnector($this->_jid->domain, $connector);
-        } elseif ($connector instanceof Connector) {
-            $this->_connector = $connector;
-        } else {
-            throw new InvalidArgumentException(sprintf(
-                '$connector must be either %s or %s instance, %s given.',
-                LoopInterface::class, Connector::class, \Kadet\Xmpp\Utils\helper\typeof($connector)
-            ));
-        }
-
-        $this->_connector->on('connect', function ($stream) {
-            $this->handleConnect($stream);
+        $queue = new ObservableCollection();
+        $queue->on('empty', function () {
+            $this->state = 'ready';
         });
+
+        $this->emit('init', [$queue]);
     }
 
     public function register(ClientModuleInterface $module, $alias = true)
@@ -241,6 +215,112 @@ class XmppClient extends XmlStream implements ContainerInterface
         }
     }
 
+    private function handleConnect($stream)
+    {
+        $this->exchangeStream($stream);
+
+        $this->getLogger()->info("Connected to {$this->_jid->domain}");
+        $this->start([
+            'from' => (string)$this->_jid,
+            'to'   => $this->_jid->domain
+        ]);
+
+        $this->state = 'connected';
+
+        return $this->emit('connect');
+    }
+
+    //region Features
+    public function getFeatures()
+    {
+        return $this->_features;
+    }
+    //endregion
+
+    //region Parser
+    public function setParser(XmlParser $parser)
+    {
+        if($this->state !== "disconnected") {
+            throw new \BadMethodCallException('Parser can be changed only when client is disconnected.');
+        }
+
+        parent::setParser($parser);
+        $this->_parser->factory->load(require __DIR__ . '/XmlElementLookup.php');
+    }
+
+    public function getParser()
+    {
+        return $this->_parser;
+    }
+    //endregion
+
+    //region Connector
+    protected function setConnector($connector)
+    {
+        if ($connector instanceof LoopInterface) {
+            $this->_connector = new Connector\TcpXmppConnector($this->_jid->domain, $connector);
+        } elseif ($connector instanceof Connector) {
+            $this->_connector = $connector;
+        } else {
+            throw new InvalidArgumentException(sprintf(
+                '$connector must be either %s or %s instance, %s given.',
+                LoopInterface::class, Connector::class, \Kadet\Xmpp\Utils\helper\typeof($connector)
+            ));
+        }
+
+        $this->_connector->on('connect', function ($stream) {
+            return $this->handleConnect($stream);
+        });
+    }
+    //endregion
+
+    //region Resource
+    public function setResource(string $resource)
+    {
+        $this->_jid = new Jid($this->_jid->domain, $this->_jid->local, $resource);
+    }
+
+    public function getResource()
+    {
+        return $this->_jid->resource;
+    }
+    //endregion
+
+    //region Password
+    public function setPassword(string $password)
+    {
+        $this->get(Authenticator::class)->setPassword($password);
+    }
+
+    public function getPassword()
+    {
+        throw new WriteOnlyException("Password can't be obtained.");
+    }
+    //endregion
+
+    //region Modules
+    public function setModules(array $modules)
+    {
+        foreach ($modules as $name => $module) {
+            $this->register($module, is_string($name) ? $name : true);
+        }
+    }
+    //endregion
+
+    //region State
+    public function setState($state)
+    {
+        $this->_state = $state;
+        $this->emit('state', [$state]);
+    }
+
+    public function getState()
+    {
+        return $this->_state;
+    }
+    //endregion
+
+    //region Container
     protected function getContainer() : ContainerInterface
     {
         return $this->_container;
@@ -250,7 +330,9 @@ class XmppClient extends XmlStream implements ContainerInterface
     {
         $this->_container = $container;
     }
+    //endregion
 
+    //region Language
     public function getLanguage(): string
     {
         return $this->_lang;
@@ -260,20 +342,17 @@ class XmppClient extends XmlStream implements ContainerInterface
     {
         $this->_lang = $language;
     }
+    //endregion
 
-    public function setPassword(string $password)
+    //region JID
+    public function getJid()
     {
-        $this->get(Authenticator::class)->setPassword($password);
+        return $this->_jid;
     }
 
-    public function setModules(array $modules) {
-        foreach ($modules as $name => $module) {
-            $this->register($module, is_string($name) ? $name : true);
-        }
-    }
-
-    public function getFeatures()
+    protected function setJid(Jid $jid)
     {
-        return $this->_features;
+        $this->_jid = $jid;
     }
+    //endregion
 }
