@@ -28,7 +28,7 @@ use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Kadet\Xmpp\Utils\filter as with;
 
 /**
- * @covers Kadet\Xmpp\Module\Binding
+ * @covers \Kadet\Xmpp\Module\Binding
  */
 class BindingTest extends \PHPUnit_Framework_TestCase
 {

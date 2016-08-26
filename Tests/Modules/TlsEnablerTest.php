@@ -30,7 +30,7 @@ use React\Stream\Stream;
  * Class StartTlsTest
  * @package Kadet\Xmpp\Tests\Modules
  *
- * @covers Kadet\Xmpp\Module\TlsEnabler
+ * @covers \Kadet\Xmpp\Module\TlsEnabler
  */
 class TlsEnablerTest extends \PHPUnit_Framework_TestCase
 {
@@ -121,6 +121,7 @@ class TlsEnablerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->_client->register(new TlsEnabler());
+        $this->_client->connect();
     }
 
     /**

@@ -20,6 +20,7 @@ use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\Logging;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Stream\CompositeStream;
 use React\Stream\DuplexStreamInterface;
 use React\Stream\ThroughStream;
@@ -50,7 +51,7 @@ class ConnectorStub implements Connector
         return $this->_stream;
     }
 
-    public function getLoop()
+    public function getLoop() : LoopInterface
     {
         return $this->_loop;
     }
