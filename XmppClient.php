@@ -207,7 +207,7 @@ class XmppClient extends XmlStream implements ContainerInterface
      * Registers module in client's dependency container.
      *
      * @param ClientModuleInterface $module Module to be registered
-     * @param bool|string           $alias  Module alias, class name by default.
+     * @param bool|string|array     $alias  Module alias, class name by default.
      *                                      `true` for aliasing interfaces and parents too,
      *                                      `false` for aliasing as class name only
      *                                      array for multiple aliases,

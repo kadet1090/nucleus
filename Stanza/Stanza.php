@@ -56,7 +56,7 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
     public function getFrom()
     {
         if((string)$this->_from !== $this->hasAttribute('from')) {
-            $this->_from = $this->hasAttribute('from') ? new Jid($this->_from) : null;
+            $this->_from = $this->hasAttribute('from') ? new Jid($this->getAttribute('from')) : null;
         }
 
         return $this->_from;
@@ -65,7 +65,7 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
     public function getTo()
     {
         if((string)$this->_to !== $this->hasAttribute('to')) {
-            $this->_to = $this->hasAttribute('to') ? new Jid($this->_to) : null;
+            $this->_to = $this->hasAttribute('to') ? new Jid($this->getAttribute('to')) : null;
         }
 
         return $this->_to;

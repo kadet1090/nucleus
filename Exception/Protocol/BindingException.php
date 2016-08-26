@@ -36,7 +36,7 @@ class BindingException extends StanzaException
         return new static($error, \Kadet\Xmpp\Utils\helper\format("Cannot bind {resource} for {bare}. {condition}", [
             'resource'  => $jid->resource ?: "no resource",
             'bare'      => (string)$jid->bare(),
-            'condition' => static::_conditionDescription($error)
+            'condition' => self::_conditionDescription($error)
         ]), 0, $previous);
     }
 
