@@ -58,7 +58,7 @@ use React\EventLoop\LoopInterface;
  *
  *                                         However modules can add custom states.
  *
- * @property-write Connector    $connector Connector used for obtaining stream
+ * @property Connector    $connector Connector used for obtaining stream
  * @property-write string       $password  Password used for client authentication
  */
 class XmppClient extends XmlStream implements ContainerInterface
@@ -134,6 +134,10 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->on('element', function (Features $element) {
             $this->_features = $element;
             $this->emit('features', [$element]);
+        }, Features::class);
+
+        $this->on('close', function (Features $element) {
+            $this->state = 'disconnected';
         }, Features::class);
     }
 
@@ -271,6 +275,11 @@ class XmppClient extends XmlStream implements ContainerInterface
         $this->_connector->on('connect', function ($stream) {
             return $this->handleConnect($stream);
         });
+    }
+
+    public function getConnector()
+    {
+        return $this->_connector;
     }
     //endregion
 

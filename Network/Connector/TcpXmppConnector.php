@@ -62,7 +62,7 @@ class TcpXmppConnector implements Connector
         $this->_loop = $loop;
     }
 
-    public function getLoop()
+    public function getLoop() : LoopInterface
     {
         return $this->_loop;
     }

@@ -17,10 +17,11 @@ namespace Kadet\Xmpp\Network;
 
 use Kadet\Xmpp\Utils\BetterEmitterInterface;
 use Kadet\Xmpp\Utils\LoggingInterface;
+use React\EventLoop\LoopInterface;
 use React\Stream\DuplexStreamInterface;
 
 interface Connector extends LoggingInterface, BetterEmitterInterface
 {
     public function connect(array $options = []) : DuplexStreamInterface;
-    public function getLoop();
+    public function getLoop() : LoopInterface;
 }

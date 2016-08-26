@@ -352,13 +352,18 @@ class XmlElement implements ContainerInterface
     }
 
     /**
-     * Returns namespace URI associated with element
+     * Returns namespace URI associated with element or specified prefix
      *
+     * @param string|bool|null $prefix
      * @return false|string
      */
-    public function getNamespace()
+    public function getNamespace($prefix = false)
     {
-        return $this->lookupUri($this->prefix);
+        if ($prefix === false) {
+            $prefix = $this->prefix;
+        }
+
+        return $this->lookupUri($prefix);
     }
 
     /**

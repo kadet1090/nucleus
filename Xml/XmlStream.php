@@ -30,18 +30,18 @@ use Kadet\Xmpp\Utils\filter as with;
  *
  * @package Kadet\Xmpp\Xml
  *
- * @event element
- * @event stream.error
+ * @event element(XmlElement $element)
+ * @event stream.error(
  * @event stream.open
  * @event stream.close
  * @event send.element
  * @event send.text
  *
- * @property-read $id
- * @property-read $from
- * @property-read $to
- * @property-read $version
- * @property-read $lang
+ * @property-read string $id
+ * @property-read string $from
+ * @property-read string $to
+ * @property-read string $version
+ * @property-read string $lang
  */
 class XmlStream extends StreamDecorator // implements BetterEmitterInterface // Some php cancer
 {
@@ -146,7 +146,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
         $this->_parser->reset();
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
-        $this->_outbound = new Stream(['attributes' => $attributes]);
+        $this->_outbound = new Stream(['attributes' => $attributes, 'xmlns' => 'jabber:client']);
 
         $this->write(preg_replace('~\s+/>$~', '>', $this->_outbound));
         $this->_isOpened = true;
