@@ -59,6 +59,7 @@ trait BetterEmitter
                 if($this->emit('exception', [ $exception, $event ])) {
                     throw $exception;
                 }
+                return false;
             }
         }
 
