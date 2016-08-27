@@ -29,9 +29,9 @@ function typeof($value) : string
         return "object of type ".get_class($value);
     } elseif (is_resource($value)) {
         return get_resource_type($value).' resource';
-    } else {
-        return gettype($value);
     }
+
+    return gettype($value);
 }
 
 function partial(callable $callable, $argument, int $position = 0) : callable

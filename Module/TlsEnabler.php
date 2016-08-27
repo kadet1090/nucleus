@@ -46,9 +46,9 @@ class TlsEnabler extends ClientModule
                 return true; // Stop processing
             } elseif ($features->startTls->required) {
                 throw new TlsException('Encryption is not available, but server requires it.');
-            } else {
-                $this->_client->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
             }
+
+            $this->_client->getLogger()->warning('Server offers TLS encryption, but stream is not capable of it.');
         }
 
         return false;
@@ -56,15 +56,15 @@ class TlsEnabler extends ClientModule
 
     private function handleTls(XmlElement $response)
     {
-        if ($response->localName === 'proceed') {
-            // this function is called only by event, which can be only fired after instanceof check
-            /** @noinspection PhpUndefinedMethodInspection */
-            $this->_client->getDecorated()->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
-            $this->_client->restart();
-
-            $this->_client->state = 'secured';
-        } else {
+        if ($response->localName !== 'proceed') {
             throw new TlsException('TLS negotiation failed.'); // XMPP does not provide any useful information why it happened
         }
+
+        // this function is called only by event, which can be only fired after instanceof check
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->_client->getDecorated()->encrypt(STREAM_CRYPTO_METHOD_TLS_CLIENT);
+        $this->_client->restart();
+
+        $this->_client->state = 'secured';
     }
 }

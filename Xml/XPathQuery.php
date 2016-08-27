@@ -76,13 +76,9 @@ class XPathQuery
             $name  = $matches[1];
             $index = isset($matches[2]) ? $matches[2] - 1 : 0;
 
-            if ($name == '*') {
-                // Path returns * if namespace occurs so we need to obtain index-th child
-                $current = $current->children[$index];
-            } else {
-                // We need to obtain index-th child with $name name
-                $current = $current->element($name, null, $index);
-            }
+            // Path returns * if namespace occurs so we need to obtain index-th child
+            // in other case we have to obtain index-th child with $name name
+            $current = $name == '*' ? $current->children[$index] : $current->element($name, null, $index);
         }
 
         return $current;

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE ruleset>
+<ruleset
+        name="Default nucleus PHPMD ruleset"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd"
+>
+    <description>Default nucleus PHPMD ruleset</description>
+
+    <rule ref="rulesets/unusedcode.xml" />
+    <rule ref="rulesets/codesize.xml" />
+    <rule ref="rulesets/cleancode.xml" />
+    <rule ref="rulesets/controversial.xml">
+        <exclude name="CamelCasePropertyName" />
+        <exclude name="CamelCaseVariableName" />
+        <exclude name="CamelCaseMethodName" />
+    </rule>
+    <rule ref="rulesets/design.xml" />
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable" />
+        <exclude name="ShortMethodName" />
+    </rule>
+
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="exceptions" value="id,to,as,a,b,i" />
+        </properties>
+    </rule>
+    <rule ref="rulesets/naming.xml/ShortMethodName">
+        <properties>
+            <property name="exceptions" value="id,on,is" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/controversial.xml/CamelCasePropertyName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
+    <rule ref="rulesets/controversial.xml/CamelCaseVariableName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
+    <rule ref="rulesets/controversial.xml/CamelCaseMethodName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
+</ruleset>

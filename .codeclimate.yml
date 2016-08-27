@@ -9,13 +9,7 @@ engines:
     enabled: true
   phpmd:
     enabled: true
-    checks:
-      Controversial/CamelCasePropertyName:
-        enabled: false
-      CleanCode/StaticAccess:
-        enabled: false
-      Naming/ShortVariable:
-        enabled: false
+    rulesets: "ruleset.xml"
 ratings:
   paths:
   - "**.inc"
