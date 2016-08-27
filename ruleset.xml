@@ -34,4 +34,20 @@
             <property name="exceptions" value="id,on,is" />
         </properties>
     </rule>
+
+    <rule ref="rulesets/controversial.xml/CamelCasePropertyName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
+    <rule ref="rulesets/controversial.xml/CamelCaseVariableName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
+    <rule ref="rulesets/controversial.xml/CamelCaseMethodName">
+        <properties>
+            <property name="allow-underscore" value="true" />
+        </properties>
+    </rule>
 </ruleset>
