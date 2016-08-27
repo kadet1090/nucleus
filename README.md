@@ -4,6 +4,7 @@
 ![Milestone](https://img.shields.io/badge/milestone-2-yellow.svg)
 [![Travis](https://img.shields.io/travis/kadet1090/nucleus.svg?maxAge=2592000?style=flat-square)](https://travis-ci.org/kadet1090/nucleus)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/kadet1090/nucleus.svg?maxAge=2592000?style=flat-square)](https://scrutinizer-ci.com/g/kadet1090/nucleus/?branch=master)
+[![Code Climate](https://img.shields.io/codeclimate/github/kadet1090/nucleus.svg?maxAge=2592000)]()
 ![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/kadet1090/nucleus.svg?maxAge=2592000?style=flat-square)
 
 Asynchronous XMPP library for PHP based on [React PHP](https://github.com/reactphp). Library is still work in progress,
