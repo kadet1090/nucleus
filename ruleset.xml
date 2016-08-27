@@ -10,7 +10,9 @@
 
     <rule ref="rulesets/unusedcode.xml" />
     <rule ref="rulesets/codesize.xml" />
-    <rule ref="rulesets/cleancode.xml" />
+    <rule ref="rulesets/cleancode.xml">
+        <exclude name="StaticAccess" />
+    </rule>
     <rule ref="rulesets/controversial.xml">
         <exclude name="CamelCasePropertyName" />
         <exclude name="CamelCaseVariableName" />
@@ -30,22 +32,6 @@
     <rule ref="rulesets/naming.xml/ShortMethodName">
         <properties>
             <property name="exceptions" value="id,on,is" />
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/controversial.xml/CamelCasePropertyName">
-        <properties>
-            <property name="allow-underscore" value="true" />
-        </properties>
-    </rule>
-    <rule ref="rulesets/controversial.xml/CamelCaseVariableName">
-        <properties>
-            <property name="allow-underscore" value="true" />
-        </properties>
-    </rule>
-    <rule ref="rulesets/controversial.xml/CamelCaseMethodName">
-        <properties>
-            <property name="allow-underscore" value="true" />
         </properties>
     </rule>
 </ruleset>
