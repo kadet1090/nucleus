@@ -99,7 +99,6 @@ class XmppClient extends XmlStream implements ContainerInterface
      * @var string
      */
     private $_state = 'disconnected';
-    private $_attributes = [];
     private $_lang;
 
     /**
@@ -164,20 +163,12 @@ class XmppClient extends XmlStream implements ContainerInterface
         }
     }
 
-    public function restart()
-    {
-        $this->getLogger()->debug('Restarting stream', $this->_attributes);
-        $this->start($this->_attributes);
-    }
-
     public function start(array $attributes = [])
     {
-        $this->_attributes = $attributes;
-
         parent::start(array_merge([
             'xmlns'    => 'jabber:client',
             'version'  => '1.0',
-            'xml:lang' => $this->_lang
+            'language' => $this->_lang
         ], $attributes));
     }
 

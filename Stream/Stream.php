@@ -25,7 +25,10 @@ use Kadet\Xmpp\Xml\XmlElement;
  *
  * @package Kadet\Xmpp\Stream
  *
- * @property string $xmlns Default namespace for stanzas
+ * @property string $xmlns    Default namespace for stanzas
+ * @property string $language Stream language
+ * @property string $version  Stream version
+ * @property string $to       Server vhost
  *
  * @internal
  */
@@ -75,4 +78,54 @@ class Stream extends XmlElement
 
         return null;
     }
+
+    /**
+     * @return string
+     */
+    public function getLanguage(): string
+    {
+        return $this->getAttribute('xml:language');
+    }
+
+    /**
+     * @param string $language
+     */
+    public function setLanguage(string $language)
+    {
+        $this->setAttribute('xml:language', $language);
+    }
+
+    /**
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        return $this->getAttribute('version');
+    }
+
+    /**
+     * @param string $version
+     */
+    public function setVersion(string $version)
+    {
+        $this->setAttribute('version', $version);
+    }
+
+    #region To
+    /**
+     * @return string
+     */
+    public function getTo(): string
+    {
+        return $this->getAttribute('to');
+    }
+
+    /**
+     * @param string $to
+     */
+    public function setTo(string $to)
+    {
+        $this->setAttribute('to', $to);
+    }
+    #endregion
 }

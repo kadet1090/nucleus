@@ -78,6 +78,8 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
      */
     private $_outbound;
 
+    private $_attributes = [];
+
     /**
      * XmlStream constructor.
      *
@@ -142,17 +144,24 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
     /**
      * Starts new stream with specified attributes
      *
-     * @param array $attributes Stream attributes
+     * @param array  $attributes Stream attributes
      */
     public function start(array $attributes = [])
     {
         $this->_parser->reset();
+        $this->_attributes = $attributes;
 
         $this->write('<?xml version="1.0" encoding="utf-8"?>');
-        $this->_outbound = new Stream(['attributes' => $attributes, 'xmlns' => 'jabber:client']);
+        $this->_outbound = new Stream($attributes);
 
         $this->write(preg_replace('~\s+/>$~', '>', $this->_outbound));
         $this->_isOpened = true;
+    }
+
+    public function restart()
+    {
+        $this->getLogger()->debug('Restarting stream', $this->_attributes);
+        $this->start($this->_attributes);
     }
 
     /**
@@ -180,7 +189,7 @@ class XmlStream extends StreamDecorator // implements BetterEmitterInterface // 
 
     public function __get($name)
     {
-        return $this->_inbound->getAttribute($name === 'lang' ? 'xml:lang' : $name);
+        return $this->_inbound->$name;
     }
 
     public function __set($name, $value)
