@@ -13,6 +13,7 @@
     "php": ">=7.0",
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
+    "react/promise": "2.4.*",
     "evenement/evenement": "2.0.*",
     "psr/log": "1.0.*",
     "kadet/keylighter": "^0.8",

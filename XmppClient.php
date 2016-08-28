@@ -27,6 +27,7 @@ use Kadet\Xmpp\Component\ComponentInterface;
 use Kadet\Xmpp\Component\SaslAuthenticator;
 use Kadet\Xmpp\Component\TlsEnabler;
 use Kadet\Xmpp\Network\Connector;
+use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter as with;
@@ -36,6 +37,8 @@ use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
 use Kadet\Xmpp\Xml\XmlStream;
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\ExtendedPromiseInterface;
 
 /**
  * Class XmppClient
@@ -210,16 +213,36 @@ class XmppClient extends XmlStream implements ContainerInterface
         if ($alias === true) {
             $this->_container->set(get_class($module), $module);
 
-            $this->register($module, array_merge(class_implements($module), array_slice(class_parents($module), 1)));
+            $this->_addToContainer($module, array_merge(class_implements($module), array_slice(class_parents($module), 1)));
         } elseif(is_array($alias)) {
-            foreach ($alias as $name) {
-                if (!$this->has($name)) {
-                    $this->register($module, $name);
-                }
-            }
+            $this->_addToContainer($module, $alias);
         } else {
-            $this->_container->set($alias === false ? get_class($module) : $alias, $module);
+            $this->_addToContainer($module, [ $alias === false ? get_class($module) : $alias ]);
         }
+    }
+
+    private function _addToContainer(ComponentInterface $module, array $aliases) {
+        foreach ($aliases as $name) {
+            if (!$this->has($name)) {
+                $this->_container->set($name, $module);
+            }
+        }
+    }
+
+    public function send(Stanza $stanza) : ExtendedPromiseInterface
+    {
+        $deferred = new Deferred();
+
+        $this->once('element', function(Stanza $stanza) use ($deferred) {
+            if($stanza->type === "error") {
+                $deferred->reject($stanza);
+            } else {
+                $deferred->resolve($stanza);
+            }
+        }, with\stanza\id($stanza->id));
+        $this->write($stanza);
+
+        return $deferred->promise();
     }
 
     private function handleConnect($stream)
