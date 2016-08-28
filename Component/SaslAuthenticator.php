@@ -13,7 +13,7 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 use Fabiang\Sasl\Authentication\AuthenticationInterface;
 use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
@@ -29,7 +29,7 @@ use function Kadet\Xmpp\Utils\filter\{
     all, in
 };
 
-class SaslAuthenticator extends ClientModule implements Authenticator
+class SaslAuthenticator extends Component implements Authenticator
 {
     const XMLNS = 'urn:ietf:params:xml:ns:xmpp-sasl';
 

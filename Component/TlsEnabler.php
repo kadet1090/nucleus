@@ -13,7 +13,7 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 use Kadet\Xmpp\Exception\Protocol\TlsException;
 use Kadet\Xmpp\Network\SecureStream;
@@ -22,7 +22,7 @@ use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 
-class TlsEnabler extends ClientModule
+class TlsEnabler extends Component
 {
     public function setClient(XmppClient $client)
     {

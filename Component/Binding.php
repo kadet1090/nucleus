@@ -13,7 +13,7 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 
 use Kadet\Xmpp\Exception\Protocol\BindingException;
@@ -23,7 +23,7 @@ use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 use \Kadet\Xmpp\Utils\filter as with;
 
-class Binding extends ClientModule
+class Binding extends Component
 {
     const XMLNS = 'urn:ietf:params:xml:ns:xmpp-bind';
 

@@ -13,11 +13,11 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 use Kadet\Xmpp\XmppClient;
 
-interface ClientModuleInterface
+interface ComponentInterface
 {
     public function setClient(XmppClient $client);
 }

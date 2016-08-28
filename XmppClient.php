@@ -20,12 +20,12 @@ use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Exception\WriteOnlyException;
-use Kadet\Xmpp\Module\Authenticator;
-use Kadet\Xmpp\Module\Binding;
-use Kadet\Xmpp\Module\ClientModule;
-use Kadet\Xmpp\Module\ClientModuleInterface;
-use Kadet\Xmpp\Module\SaslAuthenticator;
-use Kadet\Xmpp\Module\TlsEnabler;
+use Kadet\Xmpp\Component\Authenticator;
+use Kadet\Xmpp\Component\Binding;
+use Kadet\Xmpp\Component\Component;
+use Kadet\Xmpp\Component\ComponentInterface;
+use Kadet\Xmpp\Component\SaslAuthenticator;
+use Kadet\Xmpp\Component\TlsEnabler;
 use Kadet\Xmpp\Network\Connector;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
@@ -104,13 +104,13 @@ class XmppClient extends XmlStream implements ContainerInterface
 
     /**
      * XmppClient constructor.
-     * @param Jid              $jid
-     * @param array            $options {
-     *     @var XmlParser          $parser          Parser used for interpreting streams.
-     *     @var ClientModule[]     $modules         Additional modules registered when creating client.
-     *     @var string             $language        Stream language (reflects xml:language attribute)
-     *     @var ContainerInterface $container       Dependency container used for module management.
-     *     @var bool               $default-modules Load default modules or not
+     * @param Jid                  $jid
+     * @param array                $options   {
+     *     @var XmlParser          $parser    Parser used for interpreting streams.
+     *     @var Component[]        $modules   Additional modules registered when creating client.
+     *     @var string             $language  Stream language (reflects xml:language attribute)
+     *     @var ContainerInterface $container Dependency container used for module management.
+     *     @var bool               $default   -modules Load default modules or not
      * }
      */
     public function __construct(Jid $jid, array $options = [])
@@ -200,20 +200,20 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->state = 'ready';
         });
 
-        $this->emit('init', [$queue]);
+        $this->emit('init', [ $queue ]);
     }
 
     /**
      * Registers module in client's dependency container.
      *
-     * @param ClientModuleInterface $module Module to be registered
-     * @param bool|string|array     $alias  Module alias, class name by default.
+     * @param ComponentInterface $module    Module to be registered
+     * @param bool|string|array  $alias     Module alias, class name by default.
      *                                      `true` for aliasing interfaces and parents too,
      *                                      `false` for aliasing as class name only
      *                                      array for multiple aliases,
      *                                      and any string for alias name
      */
-    public function register(ClientModuleInterface $module, $alias = true)
+    public function register(ComponentInterface $module, $alias = true)
     {
         $module->setClient($this);
         if ($alias === true) {

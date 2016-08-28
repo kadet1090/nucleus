@@ -13,11 +13,11 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 use Kadet\Xmpp\Stream\Features;
 
-interface Authenticator extends ClientModuleInterface
+interface Authenticator extends ComponentInterface
 {
     public function setPassword(string $password = null);
     public function auth(Features $features);

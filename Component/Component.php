@@ -13,11 +13,11 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 use Kadet\Xmpp\XmppClient;
 
-abstract class ClientModule implements ClientModuleInterface
+abstract class Component implements ComponentInterface
 {
     /**
      * Reference to XMPP Client instance.

@@ -21,7 +21,7 @@ use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
 use Fabiang\Sasl\Exception\InvalidArgumentException;
 use Fabiang\Sasl\Sasl;
 use Kadet\Xmpp\Jid;
-use Kadet\Xmpp\Module\SaslAuthenticator;
+use Kadet\Xmpp\Component\SaslAuthenticator;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
 use Kadet\Xmpp\Xml\XmlElement;
@@ -31,7 +31,7 @@ use Kadet\Xmpp\XmppClient;
  * Class SaslAuthenticatorTest
  * @package Kadet\Xmpp\Tests
  *
- * @covers Kadet\Xmpp\Module\SaslAuthenticator
+ * @covers \Kadet\Xmpp\Component\SaslAuthenticator
  */
 class SaslAuthenticatorTest extends \PHPUnit_Framework_TestCase
 {

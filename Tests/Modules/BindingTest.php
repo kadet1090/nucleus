@@ -17,7 +17,7 @@ namespace Kadet\Xmpp\Tests\Modules;
 
 
 use Kadet\Xmpp\Jid;
-use Kadet\Xmpp\Module\Binding;
+use Kadet\Xmpp\Component\Binding;
 use Kadet\Xmpp\Stanza\Error;
 use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Stream\Features;
@@ -28,7 +28,7 @@ use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Kadet\Xmpp\Utils\filter as with;
 
 /**
- * @covers \Kadet\Xmpp\Module\Binding
+ * @covers \Kadet\Xmpp\Component\Binding
  */
 class BindingTest extends \PHPUnit_Framework_TestCase
 {

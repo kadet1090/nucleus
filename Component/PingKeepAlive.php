@@ -13,14 +13,14 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Module;
+namespace Kadet\Xmpp\Component;
 
 
 use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\XmppClient;
 
-class PingKeepAlive extends ClientModule
+class PingKeepAlive extends Component
 {
     /** @var float|int */
     private $_interval = 15;

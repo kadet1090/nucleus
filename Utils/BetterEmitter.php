@@ -92,7 +92,7 @@ trait BetterEmitter
 
         return function (...$arguments) use ($listener, $condition) {
             if ($condition(...$arguments)) {
-                return (bool)$listener(...$arguments);
+                return $listener(...$arguments);
             }
 
             return null;

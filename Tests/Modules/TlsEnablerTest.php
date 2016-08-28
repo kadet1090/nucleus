@@ -17,7 +17,7 @@ namespace Kadet\Xmpp\Tests\Modules;
 
 
 use Kadet\Xmpp\Jid;
-use Kadet\Xmpp\Module\TlsEnabler;
+use Kadet\Xmpp\Component\TlsEnabler;
 use Kadet\Xmpp\Network\TcpStream;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
@@ -30,7 +30,7 @@ use React\Stream\Stream;
  * Class StartTlsTest
  * @package Kadet\Xmpp\Tests\Modules
  *
- * @covers \Kadet\Xmpp\Module\TlsEnabler
+ * @covers \Kadet\Xmpp\Component\TlsEnabler
  */
 class TlsEnablerTest extends \PHPUnit_Framework_TestCase
 {
