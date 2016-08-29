@@ -25,7 +25,7 @@ use Kadet\Xmpp\Xml\XmlElement;
  * Represents IQ Stanza
  * @package Kadet\Xmpp\Stanza
  *
- * @property XmlElement $query
+ * @property Query $query
  */
 class Iq extends Stanza
 {

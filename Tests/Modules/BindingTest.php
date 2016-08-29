@@ -58,7 +58,7 @@ class BindingTest extends \PHPUnit_Framework_TestCase
             $id = $element->id;
 
             $this->assertEquals('jabber:client', $element->namespace);
-            $this->assertEquals('iq', $element->name);
+            $this->assertEquals('iq', $element->fullName);
             $this->assertEquals('set', $element->getAttribute('type'));
             $this->assertTrue($element->has(with\element('bind', 'urn:ietf:params:xml:ns:xmpp-bind')));
             $bind = $element->element('bind', 'urn:ietf:params:xml:ns:xmpp-bind');

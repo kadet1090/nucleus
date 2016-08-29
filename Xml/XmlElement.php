@@ -29,7 +29,7 @@ use Kadet\Xmpp\Utils\helper;
  * @property string          $localName  Tag name without prefix
  * @property string          $namespace  XML Namespace URI
  * @property string          $prefix     Tag prefix
- * @property string          $name       Full tag name prefix:local-name
+ * @property string          $fullName   Full tag name prefix:local-name
  *
  * @property XmlElement|null $parent     Element's parent or null if root node.
  * @property XmlElement[]    parents     All element's parents in chronological order (from youngest to oldest)
@@ -180,13 +180,13 @@ class XmlElement implements ContainerInterface
 
         $attributes = $this->attributes();
 
-        $result = "<{$this->name}";
+        $result = "<{$this->fullName}";
         $result .= ' ' . implode(' ', array_map(function ($key, $value) {
             return $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
         }, array_keys($attributes), array_values($attributes)));
 
         if (!empty($this->_children)) {
-            $result .= ">{$this->innerXml}</{$this->name}>";
+            $result .= ">{$this->innerXml}</{$this->fullName}>";
         } else {
             $result .= "/>";
         }
@@ -337,9 +337,16 @@ class XmlElement implements ContainerInterface
 
     public function remove($element)
     {
-        $this->_children = array_filter($this->_children, not(filter\same($element)));
-        if($element instanceof XmlElement) {
-            $element->_parent = null;
+        if(!$element instanceof \Closure) {
+            $element = is_array($element) ? filter\in($element) : filter\same($element);
+        }
+        $old = $this->_children;
+        $this->_children = array_filter($this->_children, not($element));
+
+        foreach (array_diff($old, $this->_children) as $removed) {
+            if($removed instanceof XmlElement) {
+                $removed->_parent = null;
+            }
         }
     }
 
@@ -391,7 +398,7 @@ class XmlElement implements ContainerInterface
         $this->_namespaces[ $uri ] = $prefix;
     }
 
-    public function getName()
+    public function getFullName()
     {
         return ($this->_prefix ? $this->prefix . ':' : null) . $this->localName;
     }

@@ -73,7 +73,7 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($xmlns,  $element->namespace);
         $this->assertEquals($prefix, $element->prefix);
 
-        $this->assertEquals($prefix ? "$prefix:$name" : $name, $element->name);
+        $this->assertEquals($prefix ? "$prefix:$name" : $name, $element->fullName);
 
         $this->assertEmpty($element->children);
         $this->assertEmpty($element->attributes);

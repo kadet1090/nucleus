@@ -121,7 +121,7 @@ class Stanza extends XmlElement implements XmlFactoryCollocations
 
     public function response()
     {
-        $response = static::plain($this->name, $this->namespace);
+        $response = static::plain($this->fullName, $this->namespace);
 
         $response->to   = $this->from;
         $response->from = $this->to;
