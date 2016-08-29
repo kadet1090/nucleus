@@ -63,7 +63,7 @@ class BetterEmitterTest extends \PHPUnit_Framework_TestCase
     public function testEventSubscriptionOnce()
     {
         $mock = $this->getMockBuilder('stdClass')->setMethods(['listener'])->getMock();
-        $mock->expects($this->exactly(2))->method('listener')->with('foo', 1, []);
+        $mock->expects($this->exactly(1))->method('listener')->with('foo', 1, []);
 
         $emitter = $this->getEmitter();
         $emitter->once('event', [$mock, 'listener']);

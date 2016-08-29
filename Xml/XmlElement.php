@@ -560,4 +560,22 @@ class XmlElement implements ContainerInterface
 
         return [$name, $prefix];
     }
+
+    /**
+     * Casts XML Element object to another class, it's not recommended but should work, as child classes should
+     * only decorate parent with additional getters and setters for accessing data.
+     *
+     * @param XmlElement $element
+     * @return static
+     */
+    public static function cast(XmlElement $element)
+    {
+        /** @var static $return */
+        $return = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
+        foreach (get_object_vars($element) as $property => $value) {
+            $return->$property = $value;
+        }
+
+        return $return;
+    }
 }

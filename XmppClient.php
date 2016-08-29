@@ -31,7 +31,6 @@ use Kadet\Xmpp\Stanza\Stanza;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter as with;
-use Kadet\Xmpp\Utils\ObservableCollection;
 use Kadet\Xmpp\Utils\ServiceManager;
 use Kadet\Xmpp\Xml\XmlElementFactory;
 use Kadet\Xmpp\Xml\XmlParser;
@@ -189,12 +188,12 @@ class XmppClient extends XmlStream implements ContainerInterface
 
         $this->state = 'bound';
 
-        $queue = new ObservableCollection();
-        $queue->on('empty', function () {
+        $queue = new \SplQueue();
+        $this->emit('init', [ $queue ]);
+
+        \React\Promise\all(iterator_to_array($queue))->then(function() {
             $this->state = 'ready';
         });
-
-        $this->emit('init', [ $queue ]);
     }
 
     /**
@@ -229,6 +228,12 @@ class XmppClient extends XmlStream implements ContainerInterface
         }
     }
 
+    /**
+     * Sends stanza to server and returns promise with server response.
+     *
+     * @param Stanza $stanza
+     * @return ExtendedPromiseInterface
+     */
     public function send(Stanza $stanza) : ExtendedPromiseInterface
     {
         $deferred = new Deferred();

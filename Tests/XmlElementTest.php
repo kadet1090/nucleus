@@ -19,6 +19,26 @@ use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Xml\XmlElement;
 use Kadet\Xmpp\Xml\XPathQuery;
 
+class ChildElement extends XmlElement {
+    #region Test
+    /**
+     * @return string
+     */
+    public function getTest(): string
+    {
+        return $this->getAttribute('test');
+    }
+
+    /**
+     * @param string $test
+     */
+    public function setTest(string $test)
+    {
+        $this->setAttribute('test', $test);
+    }
+    #endregion
+}
+
 /**
  * Class XmlElementTest
  * @package Kadet\Xmpp\Tests
@@ -283,5 +303,11 @@ XML;
     public function testQuery()
     {
         $this->assertInstanceOf(XPathQuery::class, (new XmlElement('parent'))->query('//'));
+    }
+
+    public function testCast()
+    {
+        $element = new XmlElement('test', null, ['attributes' => ['test' => 'value']]);
+        $this->assertEquals('value', ChildElement::cast($element)->getTest());
     }
 }
