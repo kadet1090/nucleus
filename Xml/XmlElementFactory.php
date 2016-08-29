@@ -30,9 +30,15 @@ class XmlElementFactory
             return $lookup["$tag@$namespace"];
         } elseif (isset($lookup[$namespace])) {
             return $lookup[$namespace];
-        } else {
-            return XmlElement::class;
         }
+
+        foreach ($lookup['<predicate>'] as list($class, $predicate)) {
+            if($predicate($tag, $namespace)) {
+                return $class;
+            }
+        }
+
+        return XmlElement::class;
     }
 
     public function register($class, $namespace, $tag = null)
@@ -56,9 +62,16 @@ class XmlElementFactory
 
     private function _lookupize(array $dictionary)
     {
-        $result = [];
+        $result = ['<predicate>' => []];
         foreach ($dictionary as $element) {
-            $result[$this->_name($element['name'] ?? null, $element['uri'] ?? null)] = $element[0];
+            if($element['name'] instanceof \Closure || $element['uri'] instanceof \Closure) {
+                $result['<predicate>'][] = [$element[0], \Kadet\Xmpp\Utils\filter\consecutive(
+                    \Kadet\Xmpp\Utils\filter\predicate($element['name']),
+                    \Kadet\Xmpp\Utils\filter\predicate($element['uri'])
+                )];
+            } else {
+                $result[$this->_name($element['name'] ?? null, $element['uri'] ?? null)] = $element[0];
+            }
         }
 
         return $result;

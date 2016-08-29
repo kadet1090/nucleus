@@ -16,8 +16,7 @@
 namespace Kadet\Xmpp\Component;
 
 
-use Kadet\Xmpp\Stanza\Stanza;
-use Kadet\Xmpp\Xml\XmlElement;
+use Kadet\Xmpp\Stanza\Iq;
 use Kadet\Xmpp\XmppClient;
 
 class PingKeepAlive extends Component
@@ -63,9 +62,7 @@ class PingKeepAlive extends Component
 
     private function keepAlive()
     {
-        $ping = new Stanza('iq', ['type' => 'get', 'content' => [
-            new XmlElement('ping', 'urn:xmpp:ping')
-        ]]);
+        $ping = new Iq(['type' => 'get', 'query' => new Iq\Query('urn:xmpp:ping', 'ping')]);
 
         $this->_client->write($ping);
     }

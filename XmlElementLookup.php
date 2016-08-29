@@ -20,5 +20,6 @@ return [
 
     [\Kadet\Xmpp\Stream\Error::class, 'name' => 'error', 'uri' => \Kadet\Xmpp\XmppClient::NAMESPACE_URI],
 
-    [\Kadet\Xmpp\Stanza\Stanza::class, 'uri' => 'jabber:client']
+    [\Kadet\Xmpp\Stanza\Stanza::class, 'uri' => 'jabber:client'],
+    [\Kadet\Xmpp\Stanza\Iq::class, 'name' => 'iq', 'uri' => 'jabber:client']
 ];
