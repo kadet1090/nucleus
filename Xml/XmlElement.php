@@ -19,6 +19,7 @@ use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter;
+use function Kadet\Xmpp\Utils\filter\not;
 use Kadet\Xmpp\Utils\helper;
 
 /**
@@ -332,6 +333,14 @@ class XmlElement implements ContainerInterface
         }
 
         return $this->appendChild($element);
+    }
+
+    public function remove($element)
+    {
+        $this->_children = array_filter($this->_children, not(filter\same($element)));
+        if($element instanceof XmlElement) {
+            $element->_parent = null;
+        }
     }
 
     protected function appendChild($element) {

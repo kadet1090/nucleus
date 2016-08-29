@@ -167,6 +167,20 @@ class XmlElementTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals([ $foo, $bar ], $parent->children);
     }
 
+    public function testRemovingChildren()
+    {
+        $parent = new XmlElement('parent');
+        $foo = new XmlElement('foo');
+        $bar = new XmlElement('bar');
+
+        $parent->append([ $foo, $bar ]);
+        $this->assertEquals([ $foo, $bar ], $parent->children);
+
+        $parent->remove($bar);
+        $this->assertEquals([ $foo ], $parent->children);
+        $this->assertEquals(null, $bar->parent);
+    }
+
     public function testAddingChildWithNamespace()
     {
         $parent = new XmlElement('parent', self::XMLNS);
