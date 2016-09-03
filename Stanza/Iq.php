@@ -31,6 +31,7 @@ class Iq extends Stanza
 {
     /**
      * Stanza constructor.
+     * @param string $type Iq query type
      * @param array  $options {
      *     @var Jid     $from      Jid representing "from" stanza attribute
      *     @var Jid     $to        Jid representing "to" stanza attribute
@@ -41,8 +42,9 @@ class Iq extends Stanza
      *     @var Query   $query     Query associated with stanza
      * }
      */
-    public function __construct(array $options)
+    public function __construct(string $type, array $options = [])
     {
+        $this->type = $type;
         parent::__construct('iq', $options);
     }
 

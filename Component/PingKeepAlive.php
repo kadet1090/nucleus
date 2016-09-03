@@ -62,7 +62,7 @@ class PingKeepAlive extends Component
 
     private function keepAlive()
     {
-        $ping = new Iq(['type' => 'get', 'query' => new Iq\Query('urn:xmpp:ping', 'ping')]);
+        $ping = new Iq('get', ['query' => new Iq\Query('urn:xmpp:ping', 'ping')]);
 
         $this->_client->write($ping);
     }

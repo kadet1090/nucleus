@@ -39,7 +39,7 @@ class Binding extends Component
     public function bind(Features $features)
     {
         if($features->has(with\element('bind', self::XMLNS))) {
-            $stanza = new Iq(['type' => 'set']);
+            $stanza = new Iq('set');
             $bind = $stanza->append(new Iq\Query(self::XMLNS, 'bind'));
 
             if(!$this->_client->jid->isBare()) {

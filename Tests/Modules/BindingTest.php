@@ -106,9 +106,8 @@ class BindingTest extends \PHPUnit_Framework_TestCase
     public function success($id, $resource = 'generated')
     {
         $jid = "local@domain.tld/$resource";
-        $result = new Iq([
-            'type' => 'result',
-            'id'   => $id,
+        $result = new Iq('result', [
+            'id'    => $id,
             'query' => new Iq\Query('urn:ietf:params:xml:ns:xmpp-bind', 'bind', [
                 'content' => new XmlElement('jid', null, ['content' => $jid])
             ])
@@ -120,7 +119,7 @@ class BindingTest extends \PHPUnit_Framework_TestCase
 
     public function failure($id, Error $error)
     {
-        $result = new Iq(['type' => 'error', 'id' => $id, 'content' => $error]);
+        $result = new Iq('error', ['id' => $id, 'content' => $error]);
         $this->_client->emit('element', [ $result ]);
     }
 
