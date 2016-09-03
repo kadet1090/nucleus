@@ -14,6 +14,9 @@
  */
 namespace Kadet\Xmpp\Utils\filter\stanza;
 
+require_once 'iq.php';
+
+use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Utils\filter\element;
 
 function id($id) {
@@ -22,4 +25,12 @@ function id($id) {
 
 function type($type) {
     return element\attribute('type', $type);
+}
+
+function to($address) {
+    return element\attribute('to', $address instanceof Jid ? (string)$address : $address);
+}
+
+function from($address) {
+    return element\attribute('from', $address instanceof Jid ? (string)$address : $address);
 }

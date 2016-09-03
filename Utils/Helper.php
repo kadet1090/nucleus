@@ -65,3 +65,16 @@ function rearrange(array $array, array $keys) : array
 
     return $array;
 }
+
+function copy(array $array)
+{
+    return array_map(function($element) {
+        if(is_array($element)) {
+            return copy($element);
+        } elseif(is_object($element)) {
+            return clone $element;
+        }
+
+        return $element;
+    }, $array);
+}

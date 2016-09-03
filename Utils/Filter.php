@@ -128,6 +128,58 @@ function in(...$options) {
 }
 
 /**
+ * Predicate used to check if array contains value.
+ *
+ * ```php
+ * $predicate = contains('foo');
+ *
+ * $predicate(['foo', 'bar']); // true
+ * $predicate(['bar', 'goo']); // false
+ * ```
+ *
+ * @param $value
+ * @return \Closure
+ */
+function contains($value)
+{
+    if($value instanceof \Closure) {
+        return function (array $array) use ($value) {
+            foreach ($array as $item) {
+                if($value($item)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+    }
+
+    return function (array $array) use ($value) {
+        return array_search($value, $array) !== false;
+    };
+}
+
+/**
+ * Predicate used to check if array has key.
+ *
+ * ```php
+ * $predicate = has('foo');
+ *
+ * $predicate(['foo' => '?', 'bar' => '#']); // true
+ * $predicate(['bar' => '?', 'goo' => '#']); // false
+ * ```
+ *
+ * @param $key
+ * @return \Closure
+ */
+function has($key)
+{
+    return function (array $array) use ($key) {
+        return (contains($key))(array_keys($array));
+    };
+}
+
+/**
  * Returns constant function, that always returns specified value.
  *
  * ```php
@@ -337,6 +389,13 @@ function consecutive(callable ...$predicates)
     };
 }
 
+function property($name, $value) {
+    $predicate = $value instanceof \Closure ? $value : \Kadet\Xmpp\Utils\filter\equals($value);
+
+    return function ($element) use ($name, $predicate) {
+        return $predicate($element->$name);
+    };
+}
 
 /**
  * Shorthand for calling
