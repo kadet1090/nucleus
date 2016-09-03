@@ -41,6 +41,8 @@ class TcpXmppConnector implements Connector
             ]);
 
             if ($stream = @stream_socket_client("tcp://$ip:$port")) {
+                stream_context_set_option($stream, 'ssl', 'peer_name', $this->_host);
+
                 $stream = new TcpStream($stream, $this->_loop);
                 $this->emit('connect', [ $stream ]);
 
