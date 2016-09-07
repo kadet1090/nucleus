@@ -18,6 +18,7 @@ namespace Kadet\Xmpp;
 use DI\Container;
 use DI\ContainerBuilder;
 use Interop\Container\ContainerInterface;
+use Kadet\Xmpp\Component\Roster;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Exception\WriteOnlyException;
 use Kadet\Xmpp\Component\Authenticator;
@@ -59,9 +60,21 @@ use React\Promise\ExtendedPromiseInterface;
  *                                         `ready`          - client is ready to operate
  *
  *                                         However modules can add custom states.
+ * @property-read Roster             $roster    Clients roster.
  *
  * @property Connector    $connector Connector used for obtaining stream
  * @property-write string       $password  Password used for client authentication
+ *
+ * @event stanza(Stanza $stanza)       Emitted on every incoming stanza regardless of it's kind.
+ *                                     Equivalent of element event with only instances of Stanza class allowed.
+ * @event iq(Iq $iq)                   Emitted on every incoming iq stanza.
+ * @event message(Message $message)    Emitted on every incoming message stanza.
+ * @event presence(Presence $presence) Emitted on every incoming presence stanza.
+ *
+ * @event init(ArrayObject $queue)     Emitted when connection is accomplished, after binding process.
+ *
+ * @event state(string $state)         Emitted on state change.
+ * @event bind(Jid $jid)               Emitted after successful bind.
  */
 class XmppClient extends XmlStream implements ContainerInterface
 {
@@ -106,20 +119,23 @@ class XmppClient extends XmlStream implements ContainerInterface
     /**
      * XmppClient constructor.
      * @param Jid                  $jid
-     * @param array                $options   {
-     *     @var XmlParser          $parser    Parser used for interpreting streams.
-     *     @var Component[]        $modules   Additional modules registered when creating client.
-     *     @var string             $language  Stream language (reflects xml:language attribute)
-     *     @var ContainerInterface $container Dependency container used for module management.
-     *     @var bool               $default   -modules Load default modules or not
+     * @param array                $options {
+     *     @var XmlParser          $parser          Parser used for interpreting streams.
+     *     @var Component[]        $modules         Additional modules registered when creating client.
+     *     @var string             $language        Stream language (reflects xml:language attribute)
+     *     @var ContainerInterface $container       Dependency container used for module management.
+     *     @var bool               $default-modules Load default modules or not
      * }
      */
     public function __construct(Jid $jid, array $options = [])
     {
+        $container = new ContainerBuilder();
+        $container->useAutowiring(false);
+
         $options = array_replace([
             'parser'    => new XmlParser(new XmlElementFactory()),
             'language'  => 'en',
-            'container' => ContainerBuilder::buildDevContainer(),
+            'container' => $container->build(),
             'connector' => $options['connector'] ?? new Connector\TcpXmppConnector($jid->domain, $options['loop']),
             'jid'       => $jid,
 
@@ -137,9 +153,14 @@ class XmppClient extends XmlStream implements ContainerInterface
             $this->emit('features', [$element]);
         }, Features::class);
 
-        $this->on('close', function (Features $element) {
+        $this->on('element', function (Stanza $stanza) {
+            $this->emit('stanza', [ $stanza ]);
+            $this->emit($stanza->localName, [ $stanza ]);
+        }, Stanza::class);
+
+        $this->on('close', function () {
             $this->state = 'disconnected';
-        }, Features::class);
+        });
     }
 
     public function applyOptions(array $options)
@@ -156,7 +177,8 @@ class XmppClient extends XmlStream implements ContainerInterface
             $options['modules'] = array_merge([
                 TlsEnabler::class    => new TlsEnabler(),
                 Binding::class       => new Binding(),
-                Authenticator::class => new SaslAuthenticator()
+                Authenticator::class => new SaslAuthenticator(),
+                Roster::class        => new Roster()
             ], $options['modules']);
         }
 
@@ -209,9 +231,9 @@ class XmppClient extends XmlStream implements ContainerInterface
     public function register(ComponentInterface $module, $alias = true)
     {
         $module->setClient($this);
-        if ($alias === true) {
-            $this->_container->set(get_class($module), $module);
+        $this->_container->set(get_class($module), $module);
 
+        if ($alias === true) {
             $this->_addToContainer($module, array_merge(class_implements($module), array_slice(class_parents($module), 1)));
         } elseif(is_array($alias)) {
             $this->_addToContainer($module, $alias);
@@ -393,6 +415,16 @@ class XmppClient extends XmlStream implements ContainerInterface
     protected function setJid(Jid $jid)
     {
         $this->_jid = $jid;
+    }
+    //endregion
+
+    //region Roster
+    /**
+     * @return Roster
+     */
+    public function getRoster(): Roster
+    {
+        return $this->get(Roster::class);
     }
     //endregion
 }

@@ -39,8 +39,7 @@
       "Kadet\\Xmpp\\": "."
     },
     "files": [
-      "Utils/Filter.php",
-      "Utils/Helper.php"
+      "Utils/functions.php"
     ]
   }
 }

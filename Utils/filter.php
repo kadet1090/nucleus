@@ -15,8 +15,8 @@
 
 namespace Kadet\Xmpp\Utils\filter;
 
-require __DIR__ . '/Filter/element.php';
-require __DIR__ . '/Filter/stanza.php';
+require __DIR__ . '/filter/element.php';
+require __DIR__ . '/filter/stanza.php';
 
 /**
  * Predicate used to check if argument is equal (loosely) to specified value.

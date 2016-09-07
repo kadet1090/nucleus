@@ -32,6 +32,12 @@ use Kadet\Xmpp\Xml\XmlElement;
  */
 class Item extends XmlElement
 {
+    public function __construct(Jid $jid, array $options = [])
+    {
+        $this->jid = $jid;
+        parent::__construct('item', null, $options);
+    }
+
     #region Approved
     /**
      * @return bool
@@ -130,7 +136,13 @@ class Item extends XmlElement
     {
         return array_map(function(XmlElement $element) {
             return $element->innerXml;
-        }, $this->elements('group', null));
+        }, $this->elements('group', null) ?: []);
+    }
+
+    public function setGroups(array $groups)
+    {
+        $this->remove(\Kadet\Xmpp\Utils\filter\element\name('group'));
+        $this->append($groups);
     }
     #endregion
 }
