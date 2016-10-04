@@ -20,6 +20,7 @@ use Fabiang\Sasl\Authentication\ChallengeAuthenticationInterface;
 use Fabiang\Sasl\Exception\InvalidArgumentException;
 use Fabiang\Sasl\Sasl;
 use Kadet\Xmpp\Exception\Protocol\AuthenticationException;
+use Kadet\Xmpp\Sasl\SaslFactory;
 use Kadet\Xmpp\Stream\Features;
 use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\Xml\XmlElement;
@@ -52,7 +53,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
     public function __construct($password = null, Sasl $sasl = null)
     {
         $this->setPassword($password);
-        $this->_sasl = $sasl ?: new Sasl();
+        $this->_sasl = $sasl ?: new SaslFactory();
     }
 
     public function setClient(XmppClient $client)
@@ -91,11 +92,11 @@ class SaslAuthenticator extends ClientModule implements Authenticator
             $auth = new XmlElement('auth', self::XMLNS);
             $auth->setAttribute('mechanism', $name);
 
-            $auth->append(base64_encode(
-                $mechanism instanceof ChallengeAuthenticationInterface
-                    ? $this->mechanismWithChallenge($mechanism)
-                    : $this->mechanismWithoutChallenge($mechanism)
-            ));
+            $response = $mechanism instanceof ChallengeAuthenticationInterface
+                ? $this->mechanismWithChallenge($mechanism)
+                : $this->mechanismWithoutChallenge($mechanism);
+
+            $auth->append($response ? base64_encode($response) : '=');
 
             $this->_client->write($auth);
 
@@ -109,7 +110,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
         try {
             $response = $mechanism->createResponse();
         } catch (InvalidArgumentException $e) {
-            $response = '=';
+            $response = '';
         }
 
         $callback = $this->_client->on('element', function (XmlElement $challenge) use ($mechanism) {
