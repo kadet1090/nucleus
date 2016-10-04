@@ -3,21 +3,14 @@
   "type": "library",
   "description": "Asynchronous XMPP Library for PHP",
   "keywords": ["xmpp", "async", "react", "jabber", "im"],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/kadet1090/sasl"
-    }
-  ],
   "require": {
     "php": ">=7.0",
     "react/stream": "^0.4.3",
     "react/event-loop": "^0.4",
-    "react/promise": "2.4.*",
     "evenement/evenement": "2.0.*",
     "psr/log": "1.0.*",
     "kadet/keylighter": "^0.8",
-    "fabiang/sasl": "dev-rspauth@dev",
+    "fabiang/sasl": "^1.0",
     "php-di/php-di": "^5.3"
   },
   "require-dev": {
