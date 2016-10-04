@@ -2,7 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.2.0] Milestone 2 - 2015-08-21
+## [0.2.1] Milestone 2 fix 1 - 2016-10-04
+### fixed
+
+- Use in project fix for `fabiang/sasl` instead of fork
+
+## [0.2.0] Milestone 2 - 2015-06-21
 ### Added
 - `StreamDecorator` abstract class used to make pipeline of streams,
 - `Connector` interface, used as abstraction for creating connection streams,
