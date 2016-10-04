@@ -107,7 +107,7 @@ class SaslAuthenticator extends ClientModule implements Authenticator
 
     private function mechanismWithChallenge(ChallengeAuthenticationInterface $mechanism) {
         try {
-            $response = base64_encode($mechanism->createResponse());
+            $response = $mechanism->createResponse();
         } catch (InvalidArgumentException $e) {
             $response = '=';
         }
