@@ -42,7 +42,6 @@ class RosterTest extends \PHPUnit_Framework_TestCase
         $this->_client = $this->getMockClient();
     }
 
-
     public function testAddingItemToRoster()
     {
         $this->_client->expects($this->once())->method('write')->with($this->callback(function(Iq $iq) {
@@ -64,6 +63,32 @@ class RosterTest extends \PHPUnit_Framework_TestCase
             'name' => 'Foo Barovsky',
             'groups' => ['first', 'second']
         ]));
+    }
+
+    public function testUpdatingRosterItem()
+    {
+        $this->givenDefaultItems();
+
+        $item = $this->_roster['foo@domain'];
+        $item->name = 'John Doe';
+        $item->groups = ['first', 'second'];
+
+        $this->_client->expects($this->once())->method('write')->with($this->callback(function(Iq $iq) {
+            $this->assertInstanceOf(Iq\Query\Roster::class, $iq->query);
+            $this->assertEquals('set', $iq->type);
+
+            /** @var Iq\Query\Roster $query */
+            $query = $iq->query;
+            $this->assertCount(1, $query->items);
+
+            $this->assertEquals('foo@domain', (string)$query->items[0]->jid);
+            $this->assertEquals('John Doe', (string)$query->items[0]->name);
+            $this->assertEquals(['first', 'second'], $query->items[0]->groups);
+
+            return true;
+        }));
+
+        $this->_roster->update($item);
     }
 
     public function testRequestingRosterOnInitialization()

@@ -142,7 +142,7 @@ class Item extends XmlElement
     public function setGroups(array $groups)
     {
         $this->remove(\Kadet\Xmpp\Utils\filter\element\name('group'));
-        $this->append(array_map(\Kadet\Xmpp\Utils\map\element('group'), $groups));
+        $this->append(array_map(\Kadet\Xmpp\Utils\map\asElement('group'), $groups));
     }
     #endregion
 }

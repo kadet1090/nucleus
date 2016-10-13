@@ -16,7 +16,7 @@ function append(string $suffix) {
     };
 }
 
-function element(string $name, string $uri = null, $class = XmlElement::class) {
+function asElement(string $name, string $uri = null, $class = XmlElement::class) {
     return function($item) use ($class) {
         return new $class('group', null, ['content' => $item]);
     };

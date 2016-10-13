@@ -33,7 +33,7 @@ use function Kadet\Xmpp\Utils\helper\format;
  *
  * @property-read Iq\Query\Roster\Item[] $items Copy of all roster items
  */
-class Roster extends Component implements \IteratorAggregate
+class Roster extends Component implements \IteratorAggregate, \ArrayAccess
 {
     use BetterEmitter, Accessors;
 
@@ -158,12 +158,17 @@ class Roster extends Component implements \IteratorAggregate
         return $this->_client->send($iq);
     }
 
-    public function add(Iq\Query\Roster\Item $item)
+    public function update(Iq\Query\Roster\Item $item)
     {
         $iq = new Iq('set', ['query' => new Iq\Query\Roster([
             'items' => [ $item ]
         ])]);
         return $this->_client->send($iq);
+    }
+
+    public function add(Iq\Query\Roster\Item $item)
+    {
+        return $this->update($item); // From XMPP perspective adding is same as updating non existent item.
     }
 
     /**
