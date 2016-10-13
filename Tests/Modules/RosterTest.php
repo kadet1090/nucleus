@@ -42,6 +42,30 @@ class RosterTest extends \PHPUnit_Framework_TestCase
         $this->_client = $this->getMockClient();
     }
 
+
+    public function testAddingItemToRoster()
+    {
+        $this->_client->expects($this->once())->method('write')->with($this->callback(function(Iq $iq) {
+            $this->assertInstanceOf(Iq\Query\Roster::class, $iq->query);
+            $this->assertEquals('set', $iq->type);
+
+            /** @var Iq\Query\Roster $query */
+            $query = $iq->query;
+            $this->assertCount(1, $query->items);
+
+            $this->assertEquals('foo@domain', (string)$query->items[0]->jid);
+            $this->assertEquals('Foo Barovsky', (string)$query->items[0]->name);
+            $this->assertEquals(['first', 'second'], $query->items[0]->groups);
+
+            return true;
+        }));
+
+        $this->_roster->add(new Iq\Query\Roster\Item(new Jid('foo@domain'), [
+            'name' => 'Foo Barovsky',
+            'groups' => ['first', 'second']
+        ]));
+    }
+
     public function testRequestingRosterOnInitialization()
     {
         $this->_client->expects($this->once())->method('write')->with($this->callback(all(

@@ -155,7 +155,15 @@ class Roster extends Component implements \IteratorAggregate
             $iq->query->append(new Iq\Query\Roster\Item($item->jid, ['subscription' => 'remove']));
         }
 
-        $this->_client->send($iq);
+        return $this->_client->send($iq);
+    }
+
+    public function add(Iq\Query\Roster\Item $item)
+    {
+        $iq = new Iq('set', ['query' => new Iq\Query\Roster([
+            'items' => [ $item ]
+        ])]);
+        return $this->_client->send($iq);
     }
 
     /**
