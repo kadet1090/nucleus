@@ -26,6 +26,7 @@ $client = new \Kadet\Xmpp\XmppClient(new \Kadet\Xmpp\Jid('local@domain.tld/resou
 
 // Event declatation ...
 
+$client->connect();
 $loop->run();
 ```
 
