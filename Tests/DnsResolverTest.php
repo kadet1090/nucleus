@@ -31,12 +31,10 @@ class DnsResolverTest extends \PHPUnit_Framework_TestCase
         $mock = $this->getFunctionMock(substr(DnsResolver::class, 0, strrpos(DnsResolver::class, '\\')), 'dns_get_record');
         $mock->expects($this->exactly(2))->withConsecutive(['foo.tld', DNS_A], ['bar.tld', DNS_SRV])->willReturn([
             [
-                'target' => '8.8.8.8',
-                'port' => 1337
+                'ip' => '8.8.8.8',
             ],
             [
-                'target' => '8.8.4.4',
-                'port' => 2137
+                'ip' => '8.8.4.4',
             ],
         ], [
             [
@@ -52,11 +50,11 @@ class DnsResolverTest extends \PHPUnit_Framework_TestCase
         $resolver = new DnsResolver([
             'foo.tld' => DNS_A,
             'bar.tld' => DNS_SRV
-        ]);
+        ], 5222);
 
         $this->assertEquals([
-            ['8.8.8.8', 1337],
-            ['8.8.4.4', 2137],
+            ['8.8.8.8', 5222],
+            ['8.8.4.4', 5222],
             ['10.0.0.1', 1984],
             ['xmpp.ru', 2033]
         ], iterator_to_array($resolver));

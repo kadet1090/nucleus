@@ -57,8 +57,8 @@ class TcpXmppConnector implements Connector
     {
         $this->_resolver = new DnsResolver([
             "_xmpp-client._tcp.$host" => DNS_SRV,
-            $host                     => DNS_AAAA
-        ]);
+            $host                     => DNS_A
+        ], 5222);
 
         $this->_host = $host;
         $this->_loop = $loop;

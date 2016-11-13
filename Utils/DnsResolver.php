@@ -19,12 +19,14 @@ use Traversable;
 
 class DnsResolver implements \IteratorAggregate
 {
-    private $_results = null;
+    private $_results;
+    private $_port;
     private $_pool;
 
-    public function __construct(array $pool)
+    public function __construct(array $pool, int $port)
     {
         $this->_pool = $pool;
+        $this->_port = $port;
     }
 
     /**
@@ -54,8 +56,10 @@ class DnsResolver implements \IteratorAggregate
                 continue;
             }
 
-            $this->_results = array_merge($this->_results, array_map(function ($record) {
-                return [$record['target'], $record['port']];
+            $this->_results = array_merge($this->_results, array_map(function ($record) use($type) {
+                return $type === DNS_SRV
+                    ? [$record['target'], $record['port']]
+                    : [$record['ip'], $this->_port];
             }, $result));
         }
 
