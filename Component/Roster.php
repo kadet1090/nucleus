@@ -17,6 +17,7 @@ namespace Kadet\Xmpp\Component;
 
 
 use Kadet\Highlighter\Utils\Console;
+use Kadet\Xmpp\Exception\BadMethodCallException;
 use Kadet\Xmpp\Exception\ReadOnlyException;
 use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Stanza\Iq;
@@ -25,6 +26,7 @@ use Kadet\Xmpp\Utils\BetterEmitter;
 use Kadet\Xmpp\Utils\filter as with;
 use Kadet\Xmpp\XmppClient;
 use Traversable;
+
 use function Kadet\Xmpp\Utils\helper\format;
 
 /**
@@ -32,6 +34,10 @@ use function Kadet\Xmpp\Utils\helper\format;
  * @package Kadet\Xmpp\Component
  *
  * @property-read Iq\Query\Roster\Item[] $items Copy of all roster items
+ *
+ * @event item(Iq\Query\Roster\Item $item)      Emitted on item update
+ * @event remove(Iq\Query\Roster\Item $item)    Emitted on item removal
+ * @event update()                              Emitted on roster update (after processing roster item)
  */
 class Roster extends Component implements \IteratorAggregate, \ArrayAccess
 {
@@ -41,6 +47,10 @@ class Roster extends Component implements \IteratorAggregate, \ArrayAccess
 
     public function setClient(XmppClient $client)
     {
+        if($this->_client !== null) {
+            throw new BadMethodCallException("You cannot change rosters XmppClient instance.");
+        }
+
         parent::setClient($client);
         $this->_client->on('init', function(\SplQueue $queue) {
             $queue->enqueue($this->_client->send(new Iq('get', ['query' => new Iq\Query\Roster()])));
@@ -78,6 +88,7 @@ class Roster extends Component implements \IteratorAggregate, \ArrayAccess
             'no' => count($query->items),
             'version' => $query->version
         ]));
+
         $this->_items = [];
         $this->handleSet($query);
     }
@@ -144,6 +155,13 @@ class Roster extends Component implements \IteratorAggregate, \ArrayAccess
         throw new ReadOnlyException('You should not modify roster directly, use remove() method.');
     }
 
+    /**
+     * Removes item from servers roster.
+     *
+     * @param Jid|string|\Closure $what Predicate used to determine items.
+     *
+     * @return \React\Promise\ExtendedPromiseInterface Removal result promise.
+     */
     public function remove($what)
     {
         $predicate = $what instanceof \Closure ? $what : with\property('jid', with\equals($what));
@@ -158,17 +176,32 @@ class Roster extends Component implements \IteratorAggregate, \ArrayAccess
         return $this->_client->send($iq);
     }
 
+    /**
+     * Saves item to roster.
+     *
+     * @param Iq\Query\Roster\Item $item Item to save.
+     *
+     * @return \React\Promise\ExtendedPromiseInterface Update result promise.
+     */
     public function update(Iq\Query\Roster\Item $item)
     {
         $iq = new Iq('set', ['query' => new Iq\Query\Roster([
             'items' => [ $item ]
         ])]);
+
         return $this->_client->send($iq);
     }
 
+    /**
+     * Adds item to roster.
+     *
+     * @param Iq\Query\Roster\Item $item Item to add.
+     *
+     * @return \React\Promise\ExtendedPromiseInterface Addition result promise.
+     */
     public function add(Iq\Query\Roster\Item $item)
     {
-        return $this->update($item); // From XMPP perspective adding is same as updating non existent item.
+        return $this->update($item); // From XMPPs perspective adding is same as updating non existent item.
     }
 
     /**

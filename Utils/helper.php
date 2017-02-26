@@ -47,9 +47,15 @@ function partial(callable $callable, $argument, int $position = 0) : callable
     };
 }
 
-function dd($value)
+function dump($value)
 {
     echo Dumper::get()->dump($value).PHP_EOL.PHP_EOL;
+}
+
+function dd($value)
+{
+    dump($value);
+    die;
 }
 
 function format($string, array $arguments = [])

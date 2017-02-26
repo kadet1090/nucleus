@@ -60,6 +60,7 @@ use React\Promise\ExtendedPromiseInterface;
  *                                         `ready`          - client is ready to operate
  *
  *                                         However modules can add custom states.
+ *
  * @property-read Roster             $roster    Clients roster.
  *
  * @property Connector    $connector Connector used for obtaining stream
