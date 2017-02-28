@@ -18,12 +18,17 @@ namespace Kadet\Xmpp\Component;
 
 use Kadet\Xmpp\Stanza\Iq;
 use Kadet\Xmpp\XmppClient;
+use \Kadet\Xmpp\Utils\filter as with;
+use React\EventLoop\Timer\TimerInterface;
 
 class PingKeepAlive extends Component
 {
     /** @var float|int */
     private $_interval = 15;
+    /** @var TimerInterface */
     private $_timer;
+
+    private $_handler = null;
 
     /**
      * PingKeepAlive constructor.
@@ -38,8 +43,11 @@ class PingKeepAlive extends Component
     public function setClient(XmppClient $client)
     {
         parent::setClient($client);
-
         $this->_client->on('state', [$this, 'enable'], \Kadet\Xmpp\Utils\filter\equals('ready'));
+
+        $this->_handler = $this->_client->on('iq', function(Iq $iq) {
+            $this->handleIq($iq);
+        }, with\iq\query(with\element('ping', 'urn:xmpp:ping')));
     }
 
     /**
@@ -57,7 +65,8 @@ class PingKeepAlive extends Component
      */
     public function disable()
     {
-        $this->_client->connector->getLoop()->cancelTimer($this->_timer);
+        $this->_timer->cancel();
+        $this->_client->removeListener('iq', $this->_handler);
     }
 
     private function keepAlive()
@@ -65,5 +74,14 @@ class PingKeepAlive extends Component
         $ping = new Iq('get', ['query' => new Iq\Query('urn:xmpp:ping', 'ping')]);
 
         $this->_client->write($ping);
+    }
+
+    private function handleIq(Iq $iq)
+    {
+        $response = $iq->response();
+        $response->type  = 'result';
+        $response->query = new Iq\Query('urn:xmpp:ping', 'ping');
+
+        $this->_client->write($response);
     }
 }

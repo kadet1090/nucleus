@@ -86,7 +86,7 @@ class Roster extends Component implements \IteratorAggregate, \ArrayAccess
     {
         $this->_client->getLogger()->debug(format('Received roster (version: {version}) update with {no} roster items.', [
             'no' => count($query->items),
-            'version' => $query->version
+            'version' => $query->version ?: 'no version'
         ]));
 
         $this->_items = [];

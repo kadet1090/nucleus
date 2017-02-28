@@ -35,10 +35,12 @@ class ConnectorStub implements Connector
     /**
      * ConnectorStub constructor.
      * @param DuplexStreamInterface $stream Stream returned in connect
+     * @param LoopInterface         $loop
      */
-    public function __construct(DuplexStreamInterface $stream = null)
+    public function __construct(DuplexStreamInterface $stream = null, LoopInterface $loop = null)
     {
-        $this->_loop = Factory::create();
+        $this->_loop = $loop ?? Factory::create();
+
         $this->_stream = $stream ?: new CompositeStream(
             new ThroughStream(),
             new ThroughStream()
