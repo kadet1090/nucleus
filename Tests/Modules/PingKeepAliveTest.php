@@ -54,7 +54,6 @@ class PingKeepAliveTest extends \PHPUnit_Framework_TestCase
                     new PingKeepAlive(false)
                 ]
             ]])
-            ->setMethods(['write'])
             ->getMock()
             ->emit('state', ['ready']);
     }
