@@ -38,7 +38,27 @@ class PingKeepAliveTest extends \PHPUnit_Framework_TestCase
 
         $this->getMockClient($loop)->emit('state', ['ready']);
     }
-    
+
+    public function testNoKeepAliveTimer()
+    {
+        /** @var LoopInterface|\PHPUnit_Framework_MockObject_MockObject $loop */
+        $loop = $this->getMockBuilder(LoopInterface::class)->setMethods(['addPeriodicTimer'])->getMockForAbstractClass();
+        $loop->expects($this->never())->method('addPeriodicTimer');
+
+        $this
+            ->getMockBuilder(XmppClient::class)
+            ->setConstructorArgs([new Jid('local@domain.tld'), [
+                'connector' => new ConnectorStub(null, $loop),
+                'default-modules' => false,
+                'modules' => [
+                    new PingKeepAlive(false)
+                ]
+            ]])
+            ->setMethods(['write'])
+            ->getMock()
+            ->emit('state', ['ready']);
+    }
+
     public function testKeepAliveTick()
     {
         /** @var LoopInterface|\PHPUnit_Framework_MockObject_MockObject $loop */

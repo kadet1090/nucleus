@@ -33,7 +33,7 @@ class PingKeepAlive extends Component
     /**
      * PingKeepAlive constructor.
      *
-     * @param float $interval Keep alive interval in seconds
+     * @param float|false $interval Keep alive interval in seconds or false to turn off
      */
     public function __construct($interval = 15.)
     {
@@ -55,9 +55,11 @@ class PingKeepAlive extends Component
      */
     public function enable()
     {
-        $this->_timer = $this->_client->connector->getLoop()->addPeriodicTimer($this->_interval, function() {
-            $this->keepAlive();
-        });
+        if($this->_interval) {
+            $this->_timer = $this->_client->connector->getLoop()->addPeriodicTimer($this->_interval, function() {
+                $this->keepAlive();
+            });
+        }
     }
 
     /**
@@ -65,7 +67,10 @@ class PingKeepAlive extends Component
      */
     public function disable()
     {
-        $this->_timer->cancel();
+        if($this->_timer) {
+            $this->_timer->cancel();
+        }
+
         $this->_client->removeListener('iq', $this->_handler);
     }
 
