@@ -47,7 +47,7 @@ class PingKeepAlive extends Component
 
         $this->_handler = $this->_client->on('iq', function(Iq $iq) {
             $this->handleIq($iq);
-        }, with\iq\query(with\element('ping', 'urn:xmpp:ping')));
+        }, with\all(with\iq\query(with\element('ping', 'urn:xmpp:ping')), with\stanza\type('get')));
     }
 
     /**

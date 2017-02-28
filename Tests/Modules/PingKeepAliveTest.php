@@ -24,6 +24,7 @@ use Kadet\Xmpp\Tests\Stubs\ConnectorStub;
 use Kadet\Xmpp\XmppClient;
 use React\EventLoop\LoopInterface;
 
+use \Kadet\Xmpp\Utils\filter as predicate;
 
 class PingKeepAliveTest extends \PHPUnit_Framework_TestCase
 {
@@ -64,12 +65,21 @@ class PingKeepAliveTest extends \PHPUnit_Framework_TestCase
         $iq = new Iq('get', ['id' => 'testme', 'query' => new Query('urn:xmpp:ping', 'ping')]);
 
         $client = $this->getMockClient();
-        $client->expects($this->once())->method('write')->withConsecutive(\Kadet\Xmpp\Utils\filter\all(
-            \Kadet\Xmpp\Utils\filter\stanza\type('result'),
-            \Kadet\Xmpp\Utils\filter\stanza\id('testme'),
-            \Kadet\Xmpp\Utils\filter\iq\query(\Kadet\Xmpp\Utils\filter\element('ping', 'urn:xmpp:ping'))
+        $client->expects($this->once())->method('write')->withConsecutive(predicate\all(
+            predicate\stanza\type('result'),
+            predicate\stanza\id('testme'),
+            predicate\iq\query(\Kadet\Xmpp\Utils\filter\element('ping', 'urn:xmpp:ping'))
         ));
 
+        $client->emit('element', [ $iq ]);
+    }
+
+    public function testNotRespondingOnResult()
+    {
+        $iq = new Iq('result', ['id' => 'testme', 'query' => new Query('urn:xmpp:ping', 'ping')]);
+
+        $client = $this->getMockClient();
+        $client->expects($this->never())->method('write');
         $client->emit('element', [ $iq ]);
     }
 
