@@ -22,6 +22,7 @@ return [
 
     [\Kadet\Xmpp\Stanza\Stanza::class, 'uri' => 'jabber:client'],
     [\Kadet\Xmpp\Stanza\Iq::class, 'name' => 'iq', 'uri' => 'jabber:client'],
+    [\Kadet\Xmpp\Stanza\Presence::class, 'name' => 'presence', 'uri' => 'jabber:client'],
 
     [\Kadet\Xmpp\Stanza\Iq\Query\Roster::class, 'name' => 'query', 'uri' => 'jabber:iq:roster'],
 ];
