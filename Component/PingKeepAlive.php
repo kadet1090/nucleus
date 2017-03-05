@@ -35,7 +35,7 @@ class PingKeepAlive extends Component
      *
      * @param float|false $interval Keep alive interval in seconds or false to turn off
      */
-    public function __construct($interval = 15.)
+    public function __construct($interval = 60.)
     {
         $this->_interval = $interval;
     }

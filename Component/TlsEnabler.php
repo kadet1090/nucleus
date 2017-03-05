@@ -24,15 +24,13 @@ use Kadet\Xmpp\XmppClient;
 
 class TlsEnabler extends Component
 {
-    public function setClient(XmppClient $client)
+    public function init()
     {
-        parent::setClient($client);
-
-        $client->on('features', function (Features $features) {
+        $this->_client->on('features', function (Features $features) {
             return !$this->startTls($features);
         }, null, 10);
 
-        $client->on('element', function (XmlElement $element) {
+        $this->_client->on('element', function (XmlElement $element) {
             return $this->handleTls($element);
         }, with\element\xmlns(Features\StartTls::XMLNS));
     }

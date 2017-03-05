@@ -29,5 +29,8 @@ abstract class Component implements ComponentInterface
     public function setClient(XmppClient $client)
     {
         $this->_client = $client;
+        $this->init();
     }
+
+    protected function init() { }
 }

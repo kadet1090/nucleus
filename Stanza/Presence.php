@@ -16,6 +16,7 @@
 namespace Kadet\Xmpp\Stanza;
 
 use Kadet\Xmpp\Exception\InvalidArgumentException;
+use Kadet\Xmpp\Jid;
 use Kadet\Xmpp\Utils\filter;
 use Kadet\Xmpp\Xml\XmlElement;
 
@@ -35,6 +36,18 @@ class Presence extends Stanza
 {
     const POSSIBLE_SHOW = ['available', 'unavailable', 'chat', 'dnd', 'away', 'xa'];
 
+    /**
+     * Presence constructor.
+     * @param array $options {
+     *     @var Jid    $from    Jid representing "from" stanza attribute
+     *     @var Jid    $to      Jid representing "to" stanza attribute
+     *     @var string $id      Unique id, will be generated if omitted
+     *     @var string $type    Stanza type
+     *     @var string $show
+     *     @var string status
+     *     @var int    $priority
+     * }
+     */
     public function __construct(array $options = [])
     {
         parent::__construct('presence', $options);

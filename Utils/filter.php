@@ -319,8 +319,9 @@ function predicate($predicate, bool $strict = false) : \Closure
  * @param callable $predicate
  * @return \Closure
  */
-function not(callable $predicate) : \Closure
+function not($predicate) : \Closure
 {
+    $predicate = predicate($predicate);
     return function (...$arguments) use ($predicate) {
         return !$predicate(...$arguments);
     };
