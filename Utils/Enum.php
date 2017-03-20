@@ -21,7 +21,7 @@ class Enum
     public static function available() {
         static $reflection = null;
         if(!$reflection) {
-            $reflection = new \ReflectionClass(self::class);
+            $reflection = new \ReflectionClass(static::class);
         }
 
         return $reflection->getConstants();

@@ -57,7 +57,7 @@ class Presence extends Stanza
      */
     public function getShow()
     {
-        return (string)$this->element('show', 'jabber:client') // return show node content if exist
+        return (string)$this->element('show', 'jabber:client')->innerXml // return show node content if exist
             ?? (in_array($this->type, ['available', 'unavailable']) ? $this->type : null); // or type if available
     }
 
@@ -68,9 +68,9 @@ class Presence extends Stanza
      */
     public function setShow(string $show = 'available')
     {
-        if(Show::valid($show)) {
+        if(!Show::valid($show)) {
             throw new InvalidArgumentException(format('$show must be one of: {possible}. {show} given.', [
-                'possible' => implode(',', Show::available()),
+                'possible' => implode(', ', Show::available()),
                 'show'     => $show
             ]));
         }
@@ -82,7 +82,7 @@ class Presence extends Stanza
             return;
         }
 
-        ($this->get($predicate) ?: $this->append(new XmlElement('status', 'jabber:client')))->setContent($show);
+        ($this->get($predicate) ?: $this->append(new XmlElement('show', 'jabber:client')))->setContent($show);
     }
 
     /**
