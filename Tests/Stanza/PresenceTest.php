@@ -59,7 +59,7 @@ class PresenceTest extends \PHPUnit_Framework_TestCase
         $this->_presence->show = 'available';
 
         $this->assertEquals('available', $this->_presence->type);
-        $this->assertFalse($this->_presence->get(name('show')));
+        $this->assertNull($this->_presence->get(name('show')));
     }
 
     public function testShowUnavailable()
@@ -67,7 +67,25 @@ class PresenceTest extends \PHPUnit_Framework_TestCase
         $this->_presence->show = 'unavailable';
 
         $this->assertEquals('unavailable', $this->_presence->type);
-        $this->assertFalse($this->_presence->get(name('show')));
+        $this->assertNull($this->_presence->get(name('show')));
+    }
+
+    public function testStatus()
+    {
+        $status = 'lorem ipsum dolor sit amet';
+
+        $this->_presence->status = $status;
+        $this->assertEquals($status, $this->_presence->status);
+        $this->assertEquals($status, $this->_presence->get(name('status'))->innerXml);
+    }
+
+    public function testPriority()
+    {
+        $priority = 10;
+
+        $this->_presence->priority = 10;
+        $this->assertEquals($priority, $this->_presence->priority);
+        $this->assertEquals($priority, $this->_presence->get(name('priority'))->innerXml);
     }
 
     public function showProvider() {

@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## UNRELEASED
+### Added:
+ - `Iq` stanza model
+ - `Presence` stanza model
+ - `Enum` helper
+ 
+### BC breaks:
+ - `XmlElement::get` now return `null` instead of `false` when nothing is found.
+
 ## [0.2.1] Milestone 2 fix 1 - 2016-10-04
 ### fixed
 
@@ -11,7 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `StreamDecorator` abstract class used to make pipeline of streams,
 - `Connector` interface, used as abstraction for creating connection streams,
-- Dumping utility, that can be accessed via `\Kadet\Xmpp\helper\dd` function,
+- Dumping utility, that can be accessed via `\Kadet\Xmpp\helper\dump` function,
 - `XmppClient` class which acts like dependency injection container for modules,
 - `Authenticator` module interface,
 - `SaslAuthenticator` implementing interface mentioned above,

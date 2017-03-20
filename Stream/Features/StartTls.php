@@ -39,6 +39,6 @@ class StartTls extends XmlElement
 
     public function getRequired()
     {
-        return $this->get(filter\element\name('required')) !== false;
+        return $this->get(filter\element\name('required')) !== null;
     }
 }

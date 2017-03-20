@@ -300,7 +300,7 @@ XML;
         $parent->append($bar = new XmlElement('bar', 'urn:bar'));
 
         $this->assertEquals($foo, $parent->get(function (XmlElement $e) { return $e->localName === 'foo'; }));
-        $this->assertFalse($parent->get(function (XmlElement $e) { return false; }));
+        $this->assertNull($parent->get(function (XmlElement $e) { return false; }));
     }
 
     public function testElementExistence()

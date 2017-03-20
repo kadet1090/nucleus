@@ -92,7 +92,7 @@ class Presence extends Stanza
      */
     public function getStatus()
     {
-        return (string)$this->element('status') ?? null;
+        return (string)$this->element('status')->innerXml ?? null;
     }
 
     public function setStatus(string $status = null)
@@ -108,7 +108,7 @@ class Presence extends Stanza
 
     public function getPriority()
     {
-        return (int)$this->element('priority') ?? null;
+        return (int)$this->element('priority')->innerXml ?? null;
     }
 
     public function setPriority(int $priority = null)
@@ -122,7 +122,7 @@ class Presence extends Stanza
             ? $this->element('status', 'jabber:client')
             : $this->append(new XmlElement('priority', 'jabber:client'));
 
-        $element->setContent($priority);
+        $element->setContent((string)$priority);
     }
 
     public static function show(string $show, string $status = null, array $options = [])

@@ -492,7 +492,7 @@ class XmlElement implements ContainerInterface
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -504,7 +504,7 @@ class XmlElement implements ContainerInterface
      */
     public function has($predicate)
     {
-        return $this->get($predicate) !== false;
+        return $this->get($predicate) !== null;
     }
 
     /**
