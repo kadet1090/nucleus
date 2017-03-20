@@ -17,6 +17,7 @@ namespace Kadet\Xmpp\Stanza;
 
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Jid;
+use Kadet\Xmpp\Stanza\Presence\Show;
 use Kadet\Xmpp\Utils\filter;
 use Kadet\Xmpp\Xml\XmlElement;
 
@@ -34,8 +35,6 @@ use function Kadet\Xmpp\Utils\helper\format;
  */
 class Presence extends Stanza
 {
-    const POSSIBLE_SHOW = ['available', 'unavailable', 'chat', 'dnd', 'away', 'xa'];
-
     /**
      * Presence constructor.
      * @param array $options {
@@ -69,9 +68,9 @@ class Presence extends Stanza
      */
     public function setShow(string $show = 'available')
     {
-        if(!in_array($show, self::POSSIBLE_SHOW)) {
+        if(Show::valid($show)) {
             throw new InvalidArgumentException(format('$show must be one of: {possible}. {show} given.', [
-                'possible' => implode(',', self::POSSIBLE_SHOW),
+                'possible' => implode(',', Show::available()),
                 'show'     => $show
             ]));
         }

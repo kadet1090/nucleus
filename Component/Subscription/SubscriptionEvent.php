@@ -13,19 +13,10 @@
  * From Kadet with love.
  */
 
-namespace Kadet\Xmpp\Stanza\Presence;
+namespace Kadet\Xmpp\Component\Subscription;
 
 
-use Kadet\Xmpp\Utils\Enum;
-
-class Show extends Enum
+class SubscriptionEvent
 {
-    const AVAILABLE = "available";
 
-    const AWAY = "away";
-    const CHAT = "chat";
-    const DND  = "dnd";
-    const XA   = "xa";
-
-    const UNAVAILABLE = "unavailable";
 }

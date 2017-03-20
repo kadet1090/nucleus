@@ -24,7 +24,7 @@ use Kadet\Xmpp\XmppClient;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 use function Kadet\Xmpp\Utils\filter\{
-    all, not, pass
+    all, not
 };
 use function Kadet\Xmpp\Utils\filter\stanza\{
     to, type, id

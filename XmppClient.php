@@ -267,7 +267,7 @@ class XmppClient extends XmlStream implements ContainerInterface
             } else {
                 $deferred->resolve($stanza);
             }
-        }, with\stanza\id($stanza->id));
+         }, with\stanza\id($stanza->id));
         $this->write($stanza);
 
         return $deferred->promise();
