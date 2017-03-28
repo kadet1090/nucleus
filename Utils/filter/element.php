@@ -100,19 +100,21 @@ function name($name)
  * $bar($element); // false
  * ```
  *
- * @param string $name    Argument name
- * @param string|\Closure Expected argument value
+ * @param string          $name      Argument name
+ * @param string|\Closure $value     Value predicate
+ * @param string|null     $namespace Argument URI
  * @return \Closure
+ * @internal param \Closure|string $Expected argument value
  */
-function attribute($name, $value)
+function attribute($name, $value, $namespace = null)
 {
     $predicate = $value instanceof \Closure ? $value : \Kadet\Xmpp\Utils\filter\equals($value);
 
-    return function ($element) use ($name, $predicate) {
+    return function ($element) use ($name, $predicate, $namespace) {
         if (!$element instanceof XmlElement) {
             return false;
         }
 
-        return $predicate($element->getAttribute($name));
+        return $predicate($element->getAttribute($name, $namespace));
     };
 }

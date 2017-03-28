@@ -28,6 +28,11 @@ class XmlParser implements BetterEmitterInterface
 {
     use BetterEmitter;
 
+    public static $predefined = [
+        'xmlns' => XmlElement::XMLNS,
+        'xml'   => XmlElement::XML
+    ];
+
     /**
      * Factory used for XML element creation
      *
@@ -107,8 +112,8 @@ class XmlParser implements BetterEmitterInterface
 
     private function _lookup($prefix, $namespaces)
     {
-        if ($prefix === 'xmlns') {
-            return 'http://www.w3.org/2000/xmlns/';
+        if(isset(static::$predefined[$prefix])) {
+            return static::$predefined[$prefix];
         }
 
         if (isset($namespaces[ $prefix ])) {

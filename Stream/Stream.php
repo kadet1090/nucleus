@@ -29,8 +29,6 @@ use Kadet\Xmpp\Xml\XmlElement;
  * @property string $language Stream language
  * @property string $version  Stream version
  * @property string $to       Server vhost
- *
- * @internal
  */
 class Stream extends XmlElement
 {
@@ -84,7 +82,7 @@ class Stream extends XmlElement
      */
     public function getLanguage(): string
     {
-        return $this->getAttribute('xml:language');
+        return $this->getAttribute('xml:lang');
     }
 
     /**
@@ -92,7 +90,7 @@ class Stream extends XmlElement
      */
     public function setLanguage(string $language)
     {
-        $this->setAttribute('xml:language', $language);
+        $this->setAttribute('xml:lang', $language);
     }
 
     /**

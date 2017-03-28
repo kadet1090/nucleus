@@ -19,8 +19,8 @@ use Interop\Container\ContainerInterface;
 use Kadet\Xmpp\Exception\InvalidArgumentException;
 use Kadet\Xmpp\Utils\Accessors;
 use Kadet\Xmpp\Utils\filter;
-use function Kadet\Xmpp\Utils\filter\not;
 use Kadet\Xmpp\Utils\helper;
+use function Kadet\Xmpp\Utils\filter\not;
 
 /**
  * Class XmlElement
@@ -43,6 +43,8 @@ use Kadet\Xmpp\Utils\helper;
 class XmlElement implements ContainerInterface
 {
     use Accessors;
+    const XMLNS = 'http://www.w3.org/2000/xmlns/';
+    const XML = 'http://www.w3.org/XML/1998/namespace';
 
     /**
      * Settings for tiding up XML output
@@ -202,7 +204,7 @@ class XmlElement implements ContainerInterface
      */
     public function lookupPrefix(string $uri = null)
     {
-        return $this->getNamespaces()[ $uri ] ?? false;
+        return $this->getNamespaces()[ $uri ] ?? array_search($uri, XmlParser::$predefined) ?: false;
     }
 
     /**
@@ -213,7 +215,7 @@ class XmlElement implements ContainerInterface
      */
     public function lookupUri(string $prefix = null)
     {
-        return array_search($prefix, $this->getNamespaces()) ?: false;
+        return array_search($prefix, $this->getNamespaces()) ?: XmlParser::$predefined[$prefix] ?? false;
     }
 
     /**
